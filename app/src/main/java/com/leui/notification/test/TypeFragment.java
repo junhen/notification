@@ -131,7 +131,7 @@ public class TypeFragment extends Fragment {
 		}
 		initPackageAndInternal(0);
 		//updateFloatViewVisible(true);
-		HelperUtil.addFloatView(getContext().getApplicationContext(), mRandom);
+		HelperUtil.addFloatView(getContext(), mRandom);
 		return v;
 	}
 
@@ -309,7 +309,7 @@ public class TypeFragment extends Fragment {
 	@Override
 	public void onDestroy() {
 	    //updateFloatViewVisible(false);
-		HelperUtil.removeFloatView(getContext());
+		HelperUtil.removeFloatView();
 		Log.d(TAG,"onDestroy");
 		audioManager.abandonAudioFocus(mListener);
 	    super.onDestroy();

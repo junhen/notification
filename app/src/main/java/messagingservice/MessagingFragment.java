@@ -110,7 +110,7 @@ public class MessagingFragment extends Fragment implements View.OnClickListener 
         mClearLogButton.setOnClickListener(this);
 
         setButtonsState(false);
-        HelperUtil.addFloatView(getContext().getApplicationContext(), mSendSingleConversation);
+        HelperUtil.addFloatView(getContext(), mSendSingleConversation);
 
         return rootView;
     }
@@ -168,7 +168,7 @@ public class MessagingFragment extends Fragment implements View.OnClickListener 
     @Override
     public void onDestroy() {
         Log.e(TAG,"onDestroy");
-        HelperUtil.removeFloatView(getContext());
+        HelperUtil.removeFloatView();
         super.onDestroy();
         if (mBound) {
             getActivity().unbindService(mConnection);

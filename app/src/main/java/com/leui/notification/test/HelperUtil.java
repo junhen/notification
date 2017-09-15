@@ -14,7 +14,6 @@ import android.view.WindowManager;
 
 public class HelperUtil {
     private static WindowManager wm;
-    private static Context mContext;
     private static View floatView;
     private static WindowManager.LayoutParams wmParams;
 
@@ -24,7 +23,6 @@ public class HelperUtil {
             //经过测试，这里两处可以使用activity的context
             wm = (WindowManager) context.getApplicationContext().getSystemService("window");
         }
-        mContext = context;
         if(floatView == null){
             floatView = new View(context.getApplicationContext());
             floatView.setBackgroundColor(Color.RED);
@@ -66,13 +64,7 @@ public class HelperUtil {
         wm.addView(floatView, wmParams);
     }
 
-    public static void removeFloatView(Context context) {
-        if(!context.equals(mContext)){
-            return;
-        }
-        removeFloatView();
-    }
-    private static void removeFloatView() {
+    public static void removeFloatView() {
         if(floatView != null){
             wm.removeView(floatView);
             floatView = null;
