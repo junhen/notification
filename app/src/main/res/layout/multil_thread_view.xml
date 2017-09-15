@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test.views.MultiThreadsView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/mCacheThreadExecutorBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="any"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/mFixedThreadExecutorBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="certain"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/mScheduledThreadExecutorBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="schedul"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/mSingleThreadExecutorBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="single"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#88008888">
+
+        <TextView
+            android:id="@+id/multi_thread_view_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </ScrollView>
+
+</test.views.MultiThreadsView>

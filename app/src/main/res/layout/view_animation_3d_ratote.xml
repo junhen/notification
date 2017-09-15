@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!--<View android:layout_width="0dip"
+        android:layout_height="0dip"
+        android:focusableInTouchMode="true" />-->
+    <test.views.LinearLayout3DRotate
+        android:id="@+id/LinearLayout3DRotate"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/rotate_button_holder"
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
+
+            <Button
+                android:id="@+id/rotate_3d"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="rotate_3d" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rotate_control_holder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="旋转轴："/>
+
+                <Spinner
+                    android:id="@+id/rotate_axis"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:entries="@array/axis"
+                    android:dropDownWidth="300dp"
+                    android:popupBackground="#ffaaaaaa" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="启动角度："/>
+                <EditText
+                    android:id="@+id/start_degree"
+                    android:layout_width="0dp"
+                    android:inputType="numberSigned"
+                    android:text="180"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="结束角度："/>
+                <EditText
+                    android:id="@+id/end_degree"
+                    android:layout_width="0dp"
+                    android:inputType="numberSigned"
+                    android:text="0"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="持续时间："/>
+                <EditText
+                    android:id="@+id/duration_time"
+                    android:layout_width="0dp"
+                    android:inputType="number"
+                    android:text="3000"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="动效深度："/>
+                <EditText
+                    android:id="@+id/rotate_depth"
+                    android:layout_width="0dp"
+                    android:inputType="numberSigned"
+                    android:text="300"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/test_imageView"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_margin="50dp"
+            android:src="@drawable/ic_launcher" />
+
+    </test.views.LinearLayout3DRotate>
+
+</LinearLayout>

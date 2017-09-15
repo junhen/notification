@@ -1,0 +1,100 @@
+<resources>
+
+    <string name="app_name">Jelly Bean Notifications Test</string>
+	<string name="title_section6">其它任务</string>
+	<string name="title_section5">直发消息</string>
+	<string name="title_section4">压力测试</string>
+    <string name="title_section3">展示模式</string>
+    <string name="title_section2">优先级</string>
+    <string name="title_section1">类型</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">设置</string>
+    <string name="title_activity_main">通知测试</string>
+    <string name="explain_button_text">
+\n以上发送通知的\"定义代码\"：\n\n
+Random：随机发送一下四种通知的一种\n\n
+Default:常用通知\n
+                \tIcon largeIcon = Icon.createWithResource(mContext, R.drawable.ic_launcher);\n
+		\tbuilder.setSmallIcon(R.drawable.ic_launcher)\n
+				\t\t\t.setWhen(System.currentTimeMillis())\n
+				\t\t\t.setContentTitle("Default Title")\n
+				\t\t\t.setContentText("Default Text")\n
+				\t\t\t.setContentInfo("Default Info")\n
+				\t\t\t.setContentIntent(PendingIntent.getActivity(mContext, 0, new Intent(mContext, MainActivity.class),0))\n
+				\t\t\t.setGroup("default")\n
+				\t\t\t.setLargeIcon(largeIcon);\n\n
+Big Text：大文字通知\n
+            \tIntent intent = new Intent();\n
+	    \tintent.setClass(mContext, MainActivity.class);\n
+	    \tPendingIntent pi = PendingIntent.getActivity(mContext, 0, intent,0);\n
+	    \tPendingIntent pi1 = PendingIntent.getBroadcast(mContext, 0, intent, 0);\n
+		\ttry {\n
+		\t\t\t	builder.setContentTitle("BigText title")\n
+                    \t\t\t.setContentText("BigText text")\n
+                    \t\t\t.setContentIntent(pi)\n
+                    \t\t\t.setContentInfo("BigText Info")\n
+                    \t\t\t.setGroup("bigText")\n
+                    \t\t\t.setGroupSummary(true)\n
+                    \t\t\t.setProgress(100, 50, true)\n
+                    \t\t\t.setSmallIcon(R.drawable.ic_action_search)\n
+                    \t\t\t//.setLargeIcon(mRandomizer.getRandomImage());\n
+                    \t\t\t.setLargeIcon(((BitmapDrawable)mContext.getPackageManager()\n
+							\t\t\t.getApplicationIcon("com.sina.weibo"/*"com.leui.notification.test"*/)).getBitmap());\n
+            \treturn new Notification.BigTextStyle(builder)\n
+				\t\t\t.bigText(getResources().getString(R.string.big_text))\n
+				\t\t\t.setBigContentTitle("BigText Expanded title")\n
+				\t\t\t.setSummaryText("BigText Summary text")\n
+				\t\t\t.build();\n\n
+Big Picture: \n
+                \tBitmap large = mRandomizer.getRandomImage();\n
+		\tBitmap notSoLarge = mRandomizer.getRandomImage();\n
+		\tbuilder.setContentTitle("BigPicture title")\n
+		\t\t\t		//.setContentText("BigPicture content text")\n
+		\t\t\t		.setContentText(Html.fromHtml(  \n
+         	\t\t\t		"..."+\n
+         	\t\t\t		"created in the Java source code using HTML."))\n
+		\t\t\t		.setContentInfo("BigPicture Info")\n
+		\t\t\t		.setSmallIcon(R.drawable.ic_action_search)\n
+		\t\t\t		.setLargeIcon(large)\n
+		\t\t\t		.setGroup("bigPicture");\n
+		\tsetTicker(builder, "getBigPictureStyle");\n
+		\tSpannableString ss = new SpannableString("text4: Click here to dial");\n
+		\tss.setSpan(new StyleSpan(Typeface.BOLD), 0, 6,Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);   \n
+		\tss.setSpan(new URLSpan("tel:4155551212"), 13, 17,Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); \n	
+		\treturn new Notification.BigPictureStyle(builder)\n
+		\t\t\t		.bigPicture(large)\n
+		\t\t\t		.bigLargeIcon(notSoLarge)\n
+		\t\t\t		.setBigContentTitle(ss)\n
+		\t\t\t		.setBigContentTitle("BigPicture ex title")\n
+		\t\t\t		.setSummaryText("Summary text")\n
+		\t\t\t		.build();\n\n
+Inbox: \n
+            \tIntent intent1 = new Intent(mContext, MainActivity.class);\n
+	    \tintent1.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);\n
+	    \tPendingIntent intent = PendingIntent.getActivity(mContext, 0, intent1, 0);\n
+		\t\t\tbuilder.setContentTitle("Inbox title")\n
+		\t\t\t		.setContentText("Inbox content")\n
+		\t\t\t		.setContentInfo("Inbox Info")\n
+		\t\t\t		.setSubText("Inbox  SubText")\n
+		\t\t\t		.setGroup("inbox")\n
+		\t\t\t		.setContentIntent(intent)\n
+			\t\t\t	.setSmallIcon(R.drawable.ic_action_search)\n
+			\t\t\t	//.setPriority(Notification.PRIORITY_MAX)\n
+			\t\t\t	//.setVibrate(new long[] { 1000, 1000, 1000, 1000})\n
+			\t\t\t	//.setCategory(Notification.CATEGORY_CALL)\n
+			\t\t\t	.setLargeIcon(mRandomizer.getRandomImage());\n
+		\tbuilder.getExtras().putBoolean("leui.enableNotificationTurningON", true);\n
+		\tsetTicker(builder, "getInboxStyle");\n
+		\tNotification.InboxStyle n = new Notification.InboxStyle(builder)\n
+		\t\t\t		.setBigContentTitle("Inbox Expanded title")\n
+		\t\t\t		.setSummaryText("Inbox Summary text");\n
+		\t\t\t// Add 10 lines\n
+		\tn.addLine("This is the line : " + (i + 1)+"   abcdefghijklmnopqrstuvwxyz");\n\n
+    </string>
+
+	<string name="server_test_service">启动服务</string>
+
+
+
+<string name="big_text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vitae tellus ac dui faucibus commodo. Morbi id urna lacus, sed cursus ipsum. Phasellus porta ipsum non mi bibendum accumsan. Nam lacus neque, sollicitudin et aliquam et, laoreet vitae lacus. Fusce lectus neque, semper id sagittis in, cursus elementum mi. Nam eget eleifend odio. Sed scelerisque eleifend ipsum ut aliquet. Donec nibh velit, consectetur vestibulum euismod et, tempus vel odio. Aliquam erat volutpat. Donec porta pharetra laoreet.</string>
+</resources>

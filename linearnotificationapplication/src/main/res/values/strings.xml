@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Linear Notification Application</string>
+    <string name="long_app_name">listener notificaiton</string>
+    <string name="launch_to_disable">dismiss</string>
+    <string name="waiting_for_content">wait</string>
+    <string name="snooze">snooze</string>
+    <string name="unsnooze">unsonnze</string>
+    <string name="launch_to_enable">launch to enable</string>
+    <string name="nothing_to_see">see nothing</string>
+    <string name="explanation">explanation</string>
+    <string name="disabled">disabled</string>
+    <string name="enable_it">anable it</string>
+    <string name="cancel">cancel</string>
+    <string name="service_name">listener notification service</string>
+    <string name="working_as_intended">working as intented</string>
+</resources>

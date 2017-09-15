@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/package_and_internal_stat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dip"
+            android:columnCount="6">
+
+            <Button
+                android:id="@+id/type_random"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="0"
+                android:layout_gravity="left"
+                android:layout_row="0"
+                android:layout_rowSpan="2"
+                android:text="Random" />
+
+            <Button
+                android:id="@+id/type_default"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="0"
+                android:layout_gravity="left"
+                android:layout_row="1"
+                android:layout_rowSpan="2"
+                android:onClick="showDefaultNotification"
+                android:text="Default" />
+
+            <Button
+                android:id="@+id/type_old"
+                android:layout_column="1"
+                android:layout_columnSpan="2"
+                android:layout_gravity="left"
+                android:layout_row="0"
+                android:layout_rowSpan="2"
+                android:text="Old" />
+
+            <Button
+                android:id="@+id/type_big_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:layout_gravity="left"
+                android:layout_row="1"
+                android:text="Big Text" />
+
+            <Button
+                android:id="@+id/type_big_picture"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="2"
+                android:layout_columnSpan="3"
+                android:layout_gravity="left"
+                android:layout_row="1"
+                android:text="Big Picture" />
+
+            <Button
+                android:id="@+id/type_inbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="3"
+                android:layout_gravity="left"
+                android:layout_row="1"
+                android:text="Inbox" />
+
+            <Button
+                android:id="@+id/type_missed_call"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_column="2"
+                android:layout_row="0"
+                android:text="MissedCall" />
+
+            <Button
+                android:id="@+id/dismiss_two_notifications"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_column="0"
+                android:layout_row="2"
+                android:text="清楚通知" />
+
+        </GridLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Switch
+                android:id="@+id/type_buttons_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="action_enable" />
+
+            <RadioGroup
+                android:id="@+id/type_buttons_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/radio0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="1" />
+
+                <RadioButton
+                    android:id="@+id/radio1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2" />
+
+                <RadioButton
+                    android:id="@+id/radio2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Switch
+                android:id="@+id/default_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="default_enable" />
+
+            <RadioGroup
+                android:id="@+id/default_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/default_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="all" />
+
+                <RadioButton
+                    android:id="@+id/default_sound"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="sound" />
+
+                <RadioButton
+                    android:id="@+id/default_vibrate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="vibrate" />
+
+                <RadioButton
+                    android:id="@+id/default_lights"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="lights" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Switch
+                android:id="@+id/priority_group_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="priority_enable" />
+
+            <RadioGroup
+                android:id="@+id/priority_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/priority_group_max"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="2" />
+
+                <RadioButton
+                    android:id="@+id/priority_group_high"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1" />
+
+                <RadioButton
+                    android:id="@+id/priority_group_default"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0" />
+
+                <RadioButton
+                    android:id="@+id/priority_group_low"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-1" />
+
+                <RadioButton
+                    android:id="@+id/priority_group_min"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-2" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <Switch
+            android:id="@+id/action_text_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="showActionText" />
+
+        <Switch
+            android:id="@+id/customized_notification_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="customized notification icon" />
+
+        <Switch
+            android:id="@+id/ticker_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="showTicker" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/expand_notifications_panel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="expand notification" />
+
+            <Button
+                android:id="@+id/notification_light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="notification light" />
+        </LinearLayout>
+
+        <Switch
+            android:id="@+id/ongoing_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ongoing" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/ongoing_show"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="show ongoing" />
+
+            <Button
+                android:id="@+id/ongoing_dismiss"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="hide ongoing" />
+        </LinearLayout>
+
+
+
+        <TextView
+            android:id="@+id/focus_change"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/explain_button_text_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="show explain" />
+
+        <TextView
+            android:id="@+id/explain_button_text_holder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:minHeight="20dp"
+            android:background="#aaa"
+            android:scrollbars="vertical"/>
+    </LinearLayout>
+
+</ScrollView>

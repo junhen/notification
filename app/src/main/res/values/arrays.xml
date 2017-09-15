@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="axis">
+        <item>沿着X轴旋转</item>
+        <item>沿着Y轴旋转</item>
+        <item>沿着Z轴旋转</item>
+    </string-array>
+
+    <string-array name="touch_view_control_entry">
+        <item>I为false，T为false</item>
+        <item>I为 true，T为false</item>
+        <item>I为false，T为 true</item>
+        <item>I为 true，T为 true</item>
+    </string-array>
+
+    <string-array name="drawerListAdapters">
+        <item>3D Animation</item>
+        <item>web view</item>
+        <item>touch view</item>
+        <item>multi threads</item>
+        <item>test_view</item>
+    </string-array>
+</resources>

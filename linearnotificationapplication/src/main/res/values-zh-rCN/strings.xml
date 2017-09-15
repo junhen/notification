@@ -1,0 +1,16 @@
+<resources>
+	<string name="app_name">监听通知</string>
+	<string name="long_app_name">监听所有通知</string>
+	<string name="launch_to_disable">获取权限</string>
+	<string name="waiting_for_content">等待</string>
+	<string name="snooze">链接服务</string>
+	<string name="unsnooze">断开服务</string>
+	<string name="launch_to_enable">launch to enable</string>
+	<string name="nothing_to_see">see nothing</string>
+	<string name="explanation">请点击“获取”</string>
+	<string name="disabled">缺少权限</string>
+	<string name="enable_it">获取</string>
+	<string name="cancel">取消</string>
+	<string name="service_name">listener notification service</string>
+	<string name="working_as_intended">working as intented</string>
+</resources>

@@ -1,0 +1,153 @@
+<resources>
+
+    <string name="app_name">Jelly Bean Notifications Test</string>
+    <string name="title_section6">oAcitivity</string>
+    <string name="title_section5">Messager</string>
+    <string name="title_section4">Frequency</string>
+    <string name="title_section3">DemoMode</string>
+    <string name="title_section2">Priority</string>
+    <string name="title_section1">Types</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_main">JB Notifications Test</string>
+    <string name="replied">Replied</string>
+    <string name="reply">Reply</string>
+    <string name="send_2_conversations">Send 2 conversations with 1 message</string>
+    <string name="send_1_conversation">Send 1 conversation with 1 message</string>
+    <string name="send_1_conv_3_messages">Send 1 conversation with 3 messages</string>
+    <string name="clear_log">Clear Log</string>
+    <string name="explain_button_text">explain_button_text</string>
+    <string name="long_app_name">Notification Listener Sample</string>
+    <string name="service_name">Sample Notification Listener</string>
+    <string name="working_as_intended">Service is running.  Disable it in Security Settings.</string>
+    <string name="waiting_for_content">Service is running.  Waiting for notifications to arrive.</string>
+    <string name="nothing_to_see">Service is disabled.  You must enabled it to see notifications.</string>
+    <string name="launch_to_disable">Press to disable service</string>
+    <string name="launch_to_enable">Press to enable service</string>
+    <string name="snooze">Press to snooze service</string>
+    <string name="unsnooze">Press to unsnooze service</string>
+    <string name="explanation">This app demonstrates use of the Notification Listener Service API.
+        You must enable the listener service in Security Settings to see it work.
+    </string>
+    <string name="disabled">Service is not running.</string>
+    <string name="enable_it">Enable</string>
+    <string name="cancel">Cancel</string>
+
+
+    <string name="big_text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vitae tellus ac dui faucibus commodo. Morbi id urna lacus, sed cursus ipsum. Phasellus porta ipsum non mi bibendum accumsan. Nam lacus neque, sollicitudin et aliquam et, laoreet vitae lacus. Fusce lectus neque, semper id sagittis in, cursus elementum mi. Nam eget eleifend odio. Sed scelerisque eleifend ipsum ut aliquet. Donec nibh velit, consectetur vestibulum euismod et, tempus vel odio. Aliquam erat volutpat. Donec porta pharetra laoreet.</string>
+    <string name="dumpsys_appwidget">Providers:
+  [0] provider ProviderId{user:0, app:10012, cmp:ComponentInfo{com.letv.android.recorder/com.letv.android.recorder.widget.RecorderAppWidget}}
+    min=(75265x28161)   minResize=(75265x28161) updatePeriodMillis=0 resizeMode=02 autoAdvanceViewId=-1 initialLayout=#7f03000a initialKeyguardLayout=#0 zombie=false
+  [1] provider ProviderId{user:0, app:10031, cmp:ComponentInfo{com.android.calendar/com.android.calendar.widget.CalendarAppWidgetProvider}}
+    min=(75265x28161)   minResize=(75265x28161) updatePeriodMillis=0 resizeMode=23 autoAdvanceViewId=-1 initialLayout=#7f040015 initialKeyguardLayout=#0 zombie=false
+  [2] provider ProviderId{user:0, app:10045, cmp:ComponentInfo{com.letv.lesophoneclient/com.letv.lesophoneclient.provider.LesoSearchWidgetProvider}}
+    min=(76801x9217)   minResize=(76801x9217) updatePeriodMillis=3600000 resizeMode=01 autoAdvanceViewId=-1 initialLayout=#7f03008c initialKeyguardLayout=#0 zombie=false
+  [3] provider ProviderId{user:0, app:10052, cmp:ComponentInfo{com.letv.android.note/com.letv.android.note.widget.NoteWidgetProvider}}
+    min=(28161x28161)   minResize=(28161x28161) updatePeriodMillis=0 resizeMode=03 autoAdvanceViewId=-1 initialLayout=#7f030030 initialKeyguardLayout=#0 zombie=false
+  [4] provider ProviderId{user:0, app:10064, cmp:ComponentInfo{com.letv.android.weather/com.letv.android.weather.widget.LetvWeatherClockMediumWidget}}
+    min=(75265x24577)   minResize=(75265x24577) updatePeriodMillis=0 resizeMode=01 autoAdvanceViewId=-1 initialLayout=#7f030019 initialKeyguardLayout=#0 zombie=false
+  [5] provider ProviderId{user:0, app:10071, cmp:ComponentInfo{com.android.music/com.android.music.widget.MediaAppWidgetProvider}}
+    min=(75265x46081)   minResize=(75265x46081) updatePeriodMillis=0 resizeMode=02 autoAdvanceViewId=-1 initialLayout=#7f03001d initialKeyguardLayout=#0 zombie=false
+  [6] provider ProviderId{user:0, app:10097, cmp:ComponentInfo{sina.mobile.tianqitongletv/sina.mobile.tianqitongletv.appwidget.WidgetProvider}}
+    min=(86273x44545)   minResize=(86273x44545) updatePeriodMillis=0 resizeMode=01 autoAdvanceViewId=-1 initialLayout=#7f0400a6 initialKeyguardLayout=#0 zombie=false
+  [7] provider ProviderId{user:0, app:10105, cmp:ComponentInfo{com.example.android.apis/com.example.android.apis.appwidget.ExampleAppWidgetProvider}}
+    min=(15361x7681)   minResize=(15361x7681) updatePeriodMillis=86400000 resizeMode=11 autoAdvanceViewId=-1 initialLayout=#7f03001c initialKeyguardLayout=#0 zombie=false
+  [8] provider ProviderId{user:0, app:10091, cmp:ComponentInfo{com.sina.weibo/com.sina.weibo.gowidget.GoWidgetProvider}}
+    min=(75265x46081)   minResize=(75265x46081) updatePeriodMillis=0 resizeMode=31 autoAdvanceViewId=-1 initialLayout=#7f0300e8 initialKeyguardLayout=#0 zombie=false
+  [9] provider ProviderId{user:0, app:10098, cmp:ComponentInfo{com.android.cts.verifier/com.android.cts.verifier.widget.WidgetCtsProvider}}
+    min=(64001x92161)   minResize=(10241x10241) updatePeriodMillis=1800000 resizeMode=33 autoAdvanceViewId=-1 initialLayout=#7f03005b initialKeyguardLayout=#0 zombie=false
+  [10] provider ProviderId{user:0, app:10103, cmp:ComponentInfo{com.UCMobile/com.uc.application.desktopwidget.UCWidgetProvider}}
+    min=(74241x10241)   minResize=(74241x10241) updatePeriodMillis=0 resizeMode=01 autoAdvanceViewId=-1 initialLayout=#7f030046 initialKeyguardLayout=#0 zombie=false
+  [11] provider ProviderId{user:0, app:10112, cmp:ComponentInfo{com.google.android.gm/com.google.android.gm.widget.GmailWidgetProvider}}
+    min=(46081x46081)   minResize=(46081x28161) updatePeriodMillis=0 resizeMode=33 autoAdvanceViewId=-1 initialLayout=#7f0400fb initialKeyguardLayout=#0 zombie=false
+  [12] provider ProviderId{user:0, app:10112, cmp:ComponentInfo{com.google.android.gm/com.google.android.gm.widget.GoogleMailWidgetProvider}}
+    min=(46081x46081)   minResize=(46081x28161) updatePeriodMillis=0 resizeMode=33 autoAdvanceViewId=-1 initialLayout=#7f0400fb initialKeyguardLayout=#0 zombie=false
+  [13] provider ProviderId{user:0, app:10110, cmp:ComponentInfo{com.android.vending/com.android.vending.MarketWidgetProvider}}
+    min=(28161x28161)   minResize=(28161x28161) updatePeriodMillis=43200000 resizeMode=01 autoAdvanceViewId=-1 initialLayout=#7f0401dd initialKeyguardLayout=#0 zombie=false
+  [14] provider ProviderId{user:0, app:10110, cmp:ComponentInfo{com.android.vending/com.google.android.finsky.widget.consumption.NowPlayingWidgetProvider}}
+    min=(128001x76801)   minResize=(28161x28161) updatePeriodMillis=43200000 resizeMode=31 autoAdvanceViewId=-1 initialLayout=#7f0400eb initialKeyguardLayout=#0 zombie=false
+  [15] provider ProviderId{user:0, app:10110, cmp:ComponentInfo{com.android.vending/com.google.android.finsky.widget.recommendation.RecommendedWidgetProvider}}
+    min=(128001x28161)   minResize=(46081x28161) updatePeriodMillis=43200000 resizeMode=11 autoAdvanceViewId=-1 initialLayout=#7f04016e initialKeyguardLayout=#0 zombie=false
+  [16] provider ProviderId{user:0, app:10090, cmp:ComponentInfo{cn.wps.moffice_eng/cn.wps.widget.MofficeAppWidgetProvider_4x2}}
+    min=(76801x35841)   minResize=(76801x35841) updatePeriodMillis=0 resizeMode=01 autoAdvanceViewId=-1 initialLayout=#7f03037c initialKeyguardLayout=#0 zombie=false
+  [17] provider ProviderId{user:0, app:10095, cmp:ComponentInfo{com.cleanmaster.mguard_cn/com.cleanmaster.appwidget.MainAppWidgetWhiteProvider}}
+    min=(75265x12801)   minResize=(75265x12801) updatePeriodMillis=900000 resizeMode=01 autoAdvanceViewId=-1 initialLayout=#7f0301f0 initialKeyguardLayout=#0 zombie=false
+  [18] provider ProviderId{user:0, app:10095, cmp:ComponentInfo{com.cleanmaster.mguard_cn/com.cleanmaster.appwidget.MainAppWidgetBlackProvider}}
+    min=(75265x12801)   minResize=(75265x12801) updatePeriodMillis=900000 resizeMode=01 autoAdvanceViewId=-1 initialLayout=#7f0301f1 initialKeyguardLayout=#0 zombie=false
+ 
+Widgets:
+  [0] id=2
+    host=HostId{user:0, app:10008, hostId:1024, pkg:com.android.launcher3}
+    provider=ProviderId{user:0, app:10064, cmp:ComponentInfo{com.letv.android.weather/com.letv.android.weather.widget.LetvWeatherClockMediumWidget}}
+    host.callbacks=com.android.internal.appwidget.IAppWidgetHost$Stub$Proxy@4e656f1
+    views=android.widget.RemoteViews@d24b957
+  [1] id=14
+    host=HostId{user:0, app:10021, hostId:1262836039, pkg:com.android.systemui}
+    provider=ProviderId{user:0, app:10012, cmp:ComponentInfo{com.letv.android.recorder/com.letv.android.recorder.widget.RecorderAppWidget}}
+    host.callbacks=null
+    views=android.widget.RemoteViews@27d193f3
+  [2] id=16
+    host=HostId{user:0, app:10117, hostId:2048, pkg:com.android.widgetpreview}
+    provider=ProviderId{user:0, app:10103, cmp:ComponentInfo{com.UCMobile/com.uc.application.desktopwidget.UCWidgetProvider}}
+    host.callbacks=com.android.internal.appwidget.IAppWidgetHost$Stub$Proxy@3348301f
+    views=android.widget.RemoteViews@2b601f6c
+ 
+Hosts:
+  [0] hostId=HostId{user:0, app:10008, hostId:1024, pkg:com.android.launcher3}
+    callbacks=com.android.internal.appwidget.IAppWidgetHost$Stub$Proxy@4e656f1
+    widgets.size=1 zombie=false
+  [1] hostId=HostId{user:0, app:10021, hostId:1262836039, pkg:com.android.systemui}
+    callbacks=null
+    widgets.size=1 zombie=false
+  [2] hostId=HostId{user:0, app:10117, hostId:2048, pkg:com.android.widgetpreview}
+    callbacks=com.android.internal.appwidget.IAppWidgetHost$Stub$Proxy@3348301f
+    widgets.size=1 zombie=false
+ 
+Grants:
+	    
+	</string>
+
+    <string name="title_activity_test_sync_fullscreen">testsynchronized</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="test_sync_text">test sync</string>
+    <string name="test_sync_controls_common">common</string>
+    <string name="test_sync_controls_sync_method">method</string>
+    <string name="test_sync_controls_sync_object">object</string>
+    <string name="test_sync_controls_sync_class_object">class-object</string>
+    <string name="test_sync_controls_sync_method_and_object">method-and-object</string>
+    <string name="title_view_control_activity">ViewControlActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_example">Example action</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="view_animation_one">3D Animation</string>
+    <string name="view_animation_two">2D Animation</string>
+    <string name="view_animation_three">1D Animation</string>
+    <string name="url_address">address: </string>
+    <string name="open_web">open web</string>
+    <string name="title_activity_socket_test">SocketTestActivity</string>
+    <string name="title_test_activity_life">TestActivityLife</string>
+    <string name="server_test_service">server_test_service</string>
+    <string name="ServerService">ServerService</string>
+    <string name="title_activity_socket_bind">SocketBindActivity</string>
+    <string name="description">live wallpaper xx</string>
+    <string name="title_activity_surface_view">SurfaceViewActivity</string>
+    <string name="title_activity_dialog">DialogActivity</string>
+    <string name="title_activity_parser">ParserActivity</string>
+    <string name="title_activity_json_parser">JsonParserActivity</string>
+    <string name="mode_ready">mode_ready</string>
+    <string name="mode_pause">mode_pause</string>
+    <string name="mode_lose">mode_lose</string>
+    <string name="mode_win_prefix">mode_win_prefix</string>
+    <string name="mode_win_suffix">mode_win_suffix</string>
+    <string name="message_off_pad">message_off_pad</string>
+    <string name="message_bad_angle">message_bad_angle</string>
+    <string name="message_too_fast">message_too_fast</string>
+    <string name="title_activity_lunar_game">LunarGameActivity</string>
+    <string name="title_activity_text_reader">TextReaderActivity</string>
+    <string name="title_activity_color_picker_dialog">ColorPickerDialogActivity</string>
+</resources>

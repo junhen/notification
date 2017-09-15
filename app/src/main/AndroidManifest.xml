@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.leui.notification.test"
+    android:versionCode="2"
+    android:versionName="1.1">
+
+    <uses-sdk
+        android:minSdkVersion="17"
+        android:targetSdkVersion="21" />
+
+    <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.ACCESS_KEYGUARD_SECURE_STORAGE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.RESTART_PACKAGES" />
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission
+        android:name="android.permission.BIND_APPWIDGET"
+        tools:ignore="ProtectedPermissions" />
+
+    <application
+        android:name=".NotificationApplication"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme">
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+
+        <activity
+            android:name=".MainActivity"
+            android:alwaysRetainTaskState="true"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:excludeFromRecents="false"
+            android:exported="true"
+            android:label="@string/title_activity_main"
+            android:launchMode="singleInstance"
+            android:screenOrientation="unspecified">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service android:name="messagingservice.MessagingService" />
+
+        <receiver
+            android:name="messagingservice.MessageReadReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.android.messagingservice.ACTION_MESSAGE_READ" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name="messagingservice.MessageReplyReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.android.messagingservice.ACTION_MESSAGE_REPLY" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name="notificationlistener.NotificationListenerActivity"
+            android:launchMode="singleInstance" />
+
+        <service
+            android:name="notificationlistener.Listener"
+            android:label="@string/service_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name="javacodetest.TestSyncFullscreenActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_test_sync_fullscreen"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name="xx.view.animation.utiles.ViewControlActivity"
+            android:label="@string/title_view_control_activity"
+            android:windowSoftInputMode="stateHidden" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="sockettest.SocketTestActivity"
+            android:label="@string/title_activity_socket_test" />
+        <activity
+            android:name="xx.activity.TestActivityLife"
+            android:label="@string/title_test_activity_life" />
+
+        <service
+            android:name="service.ServerSocketService"
+            android:label="@string/ServerService" />
+
+        <activity
+            android:name="xx.activity.SocketBindActivity"
+            android:label="@string/title_activity_socket_bind" />
+
+        <receiver android:name="xx.widget.WidgetProvider">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="xx.widget.UPDATE_ALL" />
+                <action android:name="com.android.keyguard.widget" />
+
+                <category android:name="widget" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/appwidget_info" />
+            <meta-data
+                android:name="xx.widget.component.name"
+                android:value="xx.widget.WidgetProvider" />
+        </receiver>
+
+        <service android:name="xx.widget.WidgetService">
+            <intent-filter>
+                <action android:name="android.appwidget.action.EXAMPLE_APP_WIDGET_SERVICE" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name="xx.widget.WidgetActivity"
+            android:configChanges="screenSize|orientation"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
+        <service
+            android:name="xx.livewallpaper.LiveWallpaperService"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_WALLPAPER">
+            <intent-filter android:priority="1">
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/wallpaper" />
+        </service>
+        <service
+            android:name="xx.livewallpaper.LiveWallpaper"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_WALLPAPER">
+
+            <!-- 为实时壁纸配置intent-filter -->
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <!-- 为实时壁纸配置meta-data -->
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/livewallpaper" />
+        </service>
+
+        <activity
+            android:name="xx.activity.VectorDrawableActivity"
+            android:configChanges="screenSize|orientation">
+
+            <!-- android:theme="@style/Theme.AppCompat.Light.NoActionBar" -->
+        </activity>
+        <activity
+            android:name="xx.activity.SurfaceViewActivity"
+            android:label="@string/title_activity_surface_view" />
+        <activity
+            android:name="xx.activity.DialogActivity"
+            android:label="@string/title_activity_dialog"
+            android:theme="@android:style/Theme.Dialog" />
+        <activity
+            android:name="xx.xml.parser.XmlParserActivity"
+            android:label="@string/title_activity_parser" />
+        <activity
+            android:name="xx.json.parser.JsonParserActivity"
+            android:label="@string/title_activity_json_parser" />
+        <activity
+            android:name="xx.game.lunar.LunarGameActivity"
+            android:label="@string/title_activity_lunar_game" />
+        <activity
+            android:name="xx.activity.TextReaderActivity"
+            android:label="@string/title_activity_text_reader" />
+        <activity
+            android:name="xx.activity.ColorPickerDialogActivity"
+            android:label="@string/title_activity_color_picker_dialog"
+            android:theme="@android:style/Theme.Dialog">
+            <intent-filter>
+                <action android:name="xx.activity.ColorPickerDialogActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

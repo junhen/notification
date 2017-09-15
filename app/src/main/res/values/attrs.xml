@@ -1,0 +1,36 @@
+<resources>
+
+    <!-- Declare custom theme attributes that allow changing which styles are
+         used for button bars depending on the API level.
+         ?android:attr/buttonBarStyle is new as of API 11 so this is
+         necessary to support previous API levels. -->
+    <declare-styleable name="ButtonBarContainerTheme">
+        <attr name="metaButtonBarStyle" format="reference" />
+        <attr name="metaButtonBarButtonStyle" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="Wallpaper">
+        <!-- Component name of an activity that allows the user to modify
+             the current settings for this wallpaper. -->
+        <attr name="settingsActivity" format="reference"/>
+
+        <!-- Reference to a the wallpaper's thumbnail bitmap. -->
+        <attr name="thumbnail" format="reference" />
+
+        <!-- Name of the author of this component, e.g. Google. -->
+        <attr name="author" format="reference" />
+
+        <!-- Short description of the component's purpose or behavior. -->
+        <attr name="description" format="string"/>
+    </declare-styleable>
+    <declare-styleable name="color_picker">
+
+        <!-- 背景圆的半径 -->
+        <attr name="circle_radius" format="dimension" />
+        <!-- 可滑动小球的半径 -->
+        <attr name="center_radius" format="dimension" />
+        <!-- 可滑动小球的颜色 -->
+        <attr name="center_color" format="color" />
+    </declare-styleable>
+
+</resources>

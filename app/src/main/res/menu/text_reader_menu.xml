@@ -1,0 +1,29 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/scale_up"
+        android:title="scale增大"
+        android:orderInCategory="100" />
+
+    <item android:id="@+id/scale_down"
+        android:title="scale减小"
+        android:orderInCategory="100" />
+
+    <item android:id="@+id/size_up"
+        android:title="size增大"
+        android:orderInCategory="100" />
+
+    <item android:id="@+id/size_down"
+        android:title="size减小"
+        android:orderInCategory="100" />
+
+    <item android:id="@+id/line_multiplier_up"
+        android:title="行距倍增1.2"
+        android:orderInCategory="100" />
+
+    <item android:id="@+id/line_multiplier_down"
+        android:title="行距倍减1.2"
+        android:orderInCategory="100" />
+
+    <item android:id="@+id/background_color"
+        android:title="background_color"
+        android:orderInCategory="100" />
+</menu>

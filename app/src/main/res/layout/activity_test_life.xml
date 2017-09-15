@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="activity.manager.TestActivityLife">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <Button
+            android:id="@+id/activity_life_dialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="show a dialog"/>
+        <Button
+            android:id="@+id/activity_life_toast"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="show a toast"/>
+        <Button
+            android:id="@+id/activity_life_dialog_activity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="skip to dialog activity"/>
+        <Button
+            android:id="@+id/activity_life_activity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="skip to another activity"/>
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
