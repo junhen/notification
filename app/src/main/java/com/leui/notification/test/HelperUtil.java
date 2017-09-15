@@ -15,21 +15,23 @@ import android.view.WindowManager;
 public class HelperUtil {
     private static WindowManager wm;
     private static View floatView;
+    private static View mView;
     private static WindowManager.LayoutParams wmParams;
 
-    public static void addFloatView(Context context, final View view){
+    public static void addFloatView(Context context, View view) {
         removeFloatView();
-        if(wm == null) {
+        if (wm == null) {
             //经过测试，这里两处可以使用activity的context
             wm = (WindowManager) context.getApplicationContext().getSystemService("window");
         }
-        if(floatView == null){
+        if (floatView == null) {
+            mView = view;
             floatView = new View(context.getApplicationContext());
             floatView.setBackgroundColor(Color.RED);
             floatView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    view.performClick();
+                    clickView();
                 }
             });
             floatView.setOnTouchListener(new View.OnTouchListener() {
@@ -39,7 +41,7 @@ public class HelperUtil {
                 }
             });
         }
-        if(wmParams == null){
+        if (wmParams == null) {
             wmParams = new WindowManager.LayoutParams();
             wmParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;//显示在锁屏界面之上
             wmParams.format = PixelFormat.TRANSPARENT;
@@ -50,7 +52,7 @@ public class HelperUtil {
                     | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
                     | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS  //可以拖动到屏幕之外
             ;
-            wmParams.gravity = Gravity.RIGHT|Gravity.BOTTOM;
+            wmParams.gravity = Gravity.RIGHT | Gravity.BOTTOM;
             //wmParams.x = 0;
             //wmParams.y = 1000;
 
@@ -65,9 +67,15 @@ public class HelperUtil {
     }
 
     public static void removeFloatView() {
-        if(floatView != null){
+        if (floatView != null) {
             wm.removeView(floatView);
             floatView = null;
+            mView = null;
         }
+    }
+
+    private static void clickView() {
+        if (mView != null)
+            mView.performClick();
     }
 }
