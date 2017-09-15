@@ -108,7 +108,7 @@ public class LinearLayout3DRotate extends LinearLayout {
             @Override
             public void run() {
                 mDurationTime.requestFocus();
-                mImm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                mImm = (InputMethodManager)getContext().getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 mImm.showSoftInput(mDurationTime, InputMethodManager.SHOW_IMPLICIT);
             }
         },300);
