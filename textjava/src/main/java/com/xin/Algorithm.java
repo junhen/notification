@@ -28,7 +28,7 @@ public class Algorithm {
 
         //选择排序（直接选择排序，堆排序）
         //AlgorithmInternal.selectSort(nums);
-        //AlgorithmInternal.heapSort(nums);
+        AlgorithmInternal.heapSort(nums);
 
         //插入排序（直接插入排序，折半插入排序，Shell排序）
         //AlgorithmInternal.insertSort(nums);
@@ -36,7 +36,7 @@ public class Algorithm {
         //AlgorithmInternal.shellSort(nums);
 
         //归并排序
-        AlgorithmInternal.mergeSort(nums, 0, nums.length -1);
+        //AlgorithmInternal.mergeSort(nums, 0, nums.length -1);
 
         //桶排序
         //AlgorithmInternal.bucketSort(nums, 100);
@@ -173,10 +173,17 @@ class AlgorithmInternal {
     }
 
     //2.2 选择排序_堆排序
-    public static void heapSort(int[] data) {
+    /*public static void heapSort(int[] data) {
         for (int i = 0; i < data.length; i++) {
             createMaxdHeap(data, data.length - 1 - i);
             swap1(data, 0, data.length - 1 - i);
+            //print(data);
+        }
+    }*/
+    public static void heapSort(int[] data) {
+        for (int i = data.length -1; i > 0; i--) {
+            createMaxdHeap(data, i); //建大堆：将最大值移到堆头，即数组首
+            swap1(data, 0, i);       //将最大值移到数组末尾
             //print(data);
         }
     }
@@ -204,10 +211,10 @@ class AlgorithmInternal {
     //3.1 插入排序_直接插入排序
     public static void insertSort(int[] numbers) {
         int size = numbers.length, temp, j;
-        for (int i = 1; i < size; i++) { //从 1 到 size
+        for(int i = 1; i < size; i++) { //从 1 到 size
             temp = numbers[i];
-            for (j = i; j > 0 && temp < numbers[j - 1]; ) //从 i 向左到 小等于 temp 的位置，只要比temp大就互换位置
-                numbers[j--] = numbers[j];
+            for(j = i; j > 0 && temp < numbers[j-1];j--) //从 i 向左到 小等于 temp 的位置，只要比temp大就互换位置
+                numbers[j] = numbers[j-1];
             numbers[j] = temp;
         }
     }

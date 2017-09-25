@@ -5,7 +5,7 @@ package com.xin;
  */
 
 public class UtilXX {
-    //
+    //利用三参数实现链表翻转
     public static Note reverseHead(Note in) {
         Note one = null;
         Note two = null;
