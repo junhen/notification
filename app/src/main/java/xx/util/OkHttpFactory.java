@@ -28,6 +28,18 @@ public class OkHttpFactory {
     private static final int CONNECT_TIMEOUT_TIME = 15;
     private static OkHttpClient.Builder sBuilder;
 
+    /**
+     * 下载进度
+     */
+    public interface ProgressListener {
+        /**
+         * @param bytesRead     当前读取字节数
+         * @param contentLength 总字节长度
+         * @param done          是否完成标识
+         */
+        void update(long bytesRead, long contentLength, boolean done);
+    }
+
     public static final OkHttpFactory getInstance() {
         return ourInstance;
     }
@@ -37,9 +49,9 @@ public class OkHttpFactory {
         sBuilder//.addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
                 //.retryOnConnectionFailure(true)
                 .connectTimeout(CONNECT_TIMEOUT_TIME, TimeUnit.SECONDS)
-        //.addNetworkInterceptor(new TokenInterceptor())
-        //.addNetworkInterceptor(mRegionInterceptor)
-        ;
+                //.addNetworkInterceptor(new TokenInterceptor())
+                //.addNetworkInterceptor(mRegionInterceptor)
+                ;
     }
 
     /**
@@ -114,17 +126,4 @@ public class OkHttpFactory {
             };
         }
     }
-
-    /**
-     * 下载进度
-     */
-    public interface ProgressListener {
-        /**
-         * @param bytesRead     当前读取字节数
-         * @param contentLength 总字节长度
-         * @param done          是否完成标识
-         */
-        void update(long bytesRead, long contentLength, boolean done);
-    }
-
 }
