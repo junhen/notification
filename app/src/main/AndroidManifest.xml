@@ -91,10 +91,10 @@
             android:name="xx.view.animation.utiles.ViewControlActivity"
             android:label="@string/title_view_control_activity"
             android:windowSoftInputMode="stateHidden" >
-            <intent-filter>
+            <!--<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            </intent-filter>-->
         </activity>
         <activity
             android:name="sockettest.SocketTestActivity"
@@ -115,7 +115,7 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="xx.widget.UPDATE_ALL" />
-                <action android:name="com.android.keyguard.widget" />
+                <!--<action android:name="com.android.keyguard.widget" />-->
 
                 <category android:name="widget" />
             </intent-filter>

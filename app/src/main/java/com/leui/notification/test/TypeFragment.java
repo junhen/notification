@@ -22,6 +22,8 @@ import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.content.FileProvider;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -37,9 +39,11 @@ import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.RadioGroup;
+import android.widget.RemoteViews;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -121,6 +125,7 @@ public class TypeFragment extends Fragment {
 
 			 v.findViewById(R.id.notification_light).setOnClickListener(listener);
 			 v.findViewById(R.id.type_missed_call).setOnClickListener(listener);
+			v.findViewById(R.id.type_self_content).setOnClickListener(listener);
 			mBigText.setOnClickListener(listener);
 			mInbox.setOnClickListener(listener);
 			mBigPicture.setOnClickListener(listener);
@@ -267,6 +272,9 @@ public class TypeFragment extends Fragment {
 						break;
 					case R.id.type_missed_call:
 						notif = getMissedCall(builder);
+						break;
+					case R.id.type_self_content:
+						notif = getSelfContent(builder);
 						break;
 					default:
 						notif = getDefaultNotification(builder);
@@ -475,6 +483,43 @@ public class TypeFragment extends Fragment {
 
     }
 
+	private Notification getSelfContent(Notification.Builder builder) {
+		Intent intent1 = new Intent();
+		File fileDir = getActivity().getExternalFilesDir(null);
+		Log.i(TAG, "external dir is " + fileDir);
+		String filePath = Environment.getExternalStorageDirectory().getAbsolutePath();
+		Log.i(TAG, "external dir is filePath = " + filePath);
+		File imageFile = new File(filePath + "/" + "wangshu.jpg");
+		// add image link
+		if (imageFile != null) {
+			//File imageFile = new File(fileDir.getAbsolutePath() + "/" + "preview.jpg");
+			Log.i(TAG, "share image path is " + imageFile.toString() + " exists = " + imageFile.exists());
+			intent1.setAction(Intent.ACTION_SEND);
+			intent1.setType("image/*");
+			Uri uri = Uri.fromFile(imageFile);
+			//Uri uri = Uri.fromFile(new File(getFilesDir(), "foo.jpg"));
+			//Uri uri = FileProvider.getUriForFile(mContext, "com.letv.android.ota.fileProvider", imageFile);
+			intent1.putExtra(Intent.EXTRA_STREAM, uri);
+			intent1.addFlags(Intent.FLAG_DEBUG_LOG_RESOLUTION);
+			intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		}
+		Intent intent2 = new Intent();
+		intent2.setComponent(new ComponentName(mContext, MainActivity.class));
+		Log.i(TAG, "external dir is intent1 = " + intent1 +",   intent2 = "+intent2);
+		PendingIntent pendIntent = PendingIntent.getActivity(mContext, 0, intent1, 0);
+		PendingIntent pendIntent2 = PendingIntent.getActivity(mContext, 0, intent2, 0);
+		builder
+				.setSmallIcon(R.drawable.ic_action_search)
+				.setContent(getUpdateRemoteviews(0,"安装成功",null,null,R.drawable.preview,pendIntent,pendIntent2));
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+			// Yummy jelly beans
+			return builder.build();
+		} else {
+			return builder.getNotification();
+		}
+	}
+
 	private Notification getOldNotification() {
 		Notification notif = new Notification(R.drawable.ic_launcher, "getOldNotification", System.currentTimeMillis());
 		//notif.setLatestEventInfo(mContext, "Old title", "Old notification content text", PendingIntent.getActivity(mContext, 0, new Intent(), 0));
@@ -510,10 +555,11 @@ public class TypeFragment extends Fragment {
 			//PendingIntent pi = PendingIntent.getActivity(mContext, 0, intent,0);
 			Intent intent1 = new Intent();
 			intent1.setClass(mContext, MainActivity.class);
-			PendingIntent intent = PendingIntent.getActivity(mContext, 0, intent1, 0);
+
+			PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent1, 0);
 			for (int i = 0; i < buttons; i++) {
 				builder.addAction(mRandomizer.getRandomIconId(),
-				        mActionTextEnable.isChecked()? "Action " + (i + 1):"", intent);
+				        mActionTextEnable.isChecked()? "Action " + (i + 1):"", pendingIntent);
 			}
 		}
 	}
@@ -641,5 +687,49 @@ public class TypeFragment extends Fragment {
         	}
         }
     };
+
+	public RemoteViews getUpdateRemoteviews(int iconId, String title, String titleContent, String content, int srcId, PendingIntent switchIntent, PendingIntent switchIntent2) {
+		Log.d(TAG, "titleContent: " + titleContent + ", content: " + content);
+		RemoteViews remoteviews = new RemoteViews(mContext.getPackageName(), R.layout.le_update_notify);
+		if (iconId != 0) {
+			remoteviews.setImageViewResource(R.id.notify_icon, iconId);
+		}
+		if (TextUtils.isEmpty(title)) {
+			remoteviews.setViewVisibility(R.id.notify_title, View.GONE);
+		} else {
+			// display title when title isn't empty
+			remoteviews.setViewVisibility(R.id.notify_title, View.VISIBLE);
+			remoteviews.setTextViewText(R.id.notify_title, title);
+		}
+		if (TextUtils.isEmpty(titleContent)) {
+			Log.d(TAG, "titleContent is empty");
+			remoteviews.setViewVisibility(R.id.notify_title_content, View.GONE);
+		} else {
+			// display titleContent when titleContent isn't empty
+			remoteviews.setViewVisibility(R.id.notify_title_content, View.VISIBLE);
+			remoteviews.setTextViewText(R.id.notify_title_content, titleContent);
+		}
+		if (TextUtils.isEmpty(content)) {
+			Log.d(TAG, "content is empty");
+			remoteviews.setViewVisibility(R.id.notify_content, View.GONE);
+		} else {
+			// display content when content isn't empty
+			remoteviews.setViewVisibility(R.id.notify_content, View.VISIBLE);
+			remoteviews.setTextViewText(R.id.notify_content, content);
+		}
+		if (srcId == 0) {
+			remoteviews.setViewVisibility(R.id.notify_image, View.GONE);
+		} else {
+			// display notify_image when srcId isn't 0
+			remoteviews.setViewVisibility(R.id.notify_image, View.VISIBLE);
+			remoteviews.setImageViewResource(R.id.notify_image, srcId);
+			remoteviews.setOnClickPendingIntent(R.id.notify_image, switchIntent);
+
+			remoteviews.setViewVisibility(R.id.notify_image_two, View.VISIBLE);
+			remoteviews.setImageViewResource(R.id.notify_image_two, srcId);
+			remoteviews.setOnClickPendingIntent(R.id.notify_image_two, switchIntent2);
+		}
+		return remoteviews;
+	}
     
 }
