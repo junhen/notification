@@ -436,4 +436,10 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
         super.onConfigurationChanged(newConfig);
         updateDisplaySize();
     }
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.d(TAG,"onActivityResult, requestCode: "+requestCode+",  resultCode : "+resultCode + ",   data : "+data);
+		super.onActivityResult(requestCode, resultCode, data);
+	}
 }
