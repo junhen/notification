@@ -47,7 +47,7 @@ public class DeviceMethod {
     public void onActivate() {
         Log.d(TAG, "onActivate");
         Toast.makeText(mContext, "激活", Toast.LENGTH_SHORT).show();
-        //判断是否激活  如果没有就启动激活设备
+        //判断是否激活  如果没有就启动激活设备,这里需要设置里对应app的修改，不能拦截NEW_STACK模式的intent请求
         if (!devicePolicyManager.isAdminActive(componentName)) {
             Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
             intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);

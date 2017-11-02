@@ -11,16 +11,16 @@
         android:padding="10dip"
         android:layout_gravity="center"
         android:text="start" />
-    
+
     <TextView
         android:id="@+id/tv_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dip"
         android:layout_gravity="center"
-        android:text="null" 
+        android:text="null"
         />
-    
+
     <Button
         android:id="@+id/btn_stop"
         android:layout_width="wrap_content"
@@ -29,7 +29,7 @@
         android:layout_gravity="center"
         android:enabled="false"
         android:text="stop" />
-    
+
     <EditText
         android:id="@+id/et_frequency"
         android:layout_width="wrap_content"
@@ -37,9 +37,9 @@
         android:padding="10dip"
         android:layout_gravity="center"
         android:numeric="signed"
-        
+
         android:hint="10"/>
-    
+
     <Button
         android:id="@+id/btn_update"
         android:layout_width="wrap_content"
@@ -47,5 +47,27 @@
         android:padding="10dip"
         android:layout_gravity="center"
         android:text="send" />
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+
+        <Button
+            android:id="@+id/btn_add_float_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dip"
+            android:text="add" />
+
+
+        <Button
+            android:id="@+id/btn_remove_float_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dip"
+            android:text="remove" />
+    </LinearLayout>
 
 </LinearLayout>
