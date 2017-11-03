@@ -15,10 +15,12 @@ import java.util.List;
 /**
  * Created by xiaoxin on 17-10-31.
  *
- * 使用getInstance获取此工具类单例
- * 调用addFloatView增加一个悬浮窗，主要是独一无二的name，还有必须的callback
- * 调用removeFloatView删除对应那么的悬浮窗
- * callback三个功能：初始化，结束收尾，点击事件
+ * 使用{@link #getInstance}获取此工具类单例
+ * 调用{@link #addFloatView}增加一个悬浮窗，主要是独一无二的name，还有必须的callback
+ * 调用{@link #removeFloatView}删除对应那么的悬浮窗
+ *
+ * {@link #(FloatViewHolder)} 一个内部类，用于保存一个悬浮窗的信息
+ * {@link #mFloatViewHolders}用于保存所有由此工具类增加的悬浮窗代表类{@link #(FloatViewHolder)}
  */
 
 public class NewWindowUtil {
@@ -26,6 +28,10 @@ public class NewWindowUtil {
     private static final List<FloatViewHolder> mFloatViewHolders = new ArrayList<>();
     private static NewWindowUtil mInstance;
 
+    /**
+     * 获取此工具类的单例
+     * @return NewWindowUtil
+     */
     public static synchronized NewWindowUtil getInstance() {
         if (mInstance == null) {
             mInstance = new NewWindowUtil();
@@ -34,10 +40,20 @@ public class NewWindowUtil {
         return mInstance;
     }
 
+    /**
+     * @param context : 上下文，应该是activity，service，application的context
+     * @param name ： 悬浮窗的名字，用于标识一个独一无二的，不可以重名
+     * @param callback ： 回调，包含三个功能：初始化，结束收尾，点击事件
+     */
     public void addFloatView(Context context, String name, Callback callback) {
-        addFloatView(context, name, callback, getDefaultView(context, callback), getDefaultLayoutParams());
+        addFloatView(context, name, callback, getDefaultView(context, callback), getDefaultLayoutParams(name));
     }
 
+    /**
+     * 增加悬浮窗
+     * @param view : 悬浮窗对应的view，可以自建，也可以使用默认的
+     * @param lp ： 增加悬浮窗是使用的WindowManager.LayoutParams
+     */
     public void addFloatView(Context context, String name, Callback callback, View view, WindowManager.LayoutParams lp) {
         if (callback == null) {
             Log.d(TAG, "addFloatView,  callback can not be null.");
@@ -66,6 +82,10 @@ public class NewWindowUtil {
         }
     }
 
+    /**
+     * 删除悬浮窗
+     * @param name : 删除悬浮窗时，必须指定对应的name
+     */
     public void removeFloatView(String name) {
         if (mFloatViewHolders.size() > 0) {
             synchronized (mFloatViewHolders) {
@@ -99,7 +119,7 @@ public class NewWindowUtil {
         return view;
     }
 
-    private WindowManager.LayoutParams getDefaultLayoutParams() {
+    private WindowManager.LayoutParams getDefaultLayoutParams(String name) {
         WindowManager.LayoutParams lp;
         lp = new WindowManager.LayoutParams();
         lp.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;//显示在锁屏界面之上
@@ -111,15 +131,15 @@ public class NewWindowUtil {
                 | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS  //可以拖动到屏幕之外
         ;
+        //设置悬浮窗的位置，可以是gravity，也可以直接使用坐标x，y。
         lp.gravity = Gravity.END | Gravity.BOTTOM;
         //lp.x = 0;
         //lp.y = 1000;
-
         //设置悬浮窗口长宽数据
         lp.width = 200;
         lp.height = 200;
         //lp.verticalMargin = 200;
-        lp.setTitle("notification_float");
+        lp.setTitle(name);
         lp.windowAnimations = android.R.style.Animation_Dialog;
         return lp;
     }
@@ -138,6 +158,9 @@ public class NewWindowUtil {
         return sb.toString();
     }
 
+    /**
+     * 悬浮窗信息类
+     */
     private static class FloatViewHolder {
         private String name;
         private View floatView;
@@ -150,7 +173,9 @@ public class NewWindowUtil {
         }
     }
 
-    //该接口可以为悬浮窗做初始化和结束收尾的工作，增加点击事件的功能
+    /**
+     * 该接口可以为悬浮窗做初始化和结束收尾的工作，增加点击事件的功能
+     */
     public interface Callback {
         void onAddView();
 
