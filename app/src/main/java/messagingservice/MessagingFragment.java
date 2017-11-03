@@ -38,15 +38,17 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.leui.notification.test.HelperUtil;
 import com.leui.notification.test.R;
+
+import xx.util.NewWindowUtil;
 
 /**
  * The listener_notifications_main fragment that shows the buttons and the text xx.view containing the log.
  */
-public class MessagingFragment extends Fragment implements View.OnClickListener {
+public class MessagingFragment extends Fragment implements View.OnClickListener, NewWindowUtil.Callback {
 
     private static final String TAG = MessagingFragment.class.getSimpleName();
+    private String SEDN_MESSAGE_NOTIFICATION = "sendMessageNotification";
 
     private Button mSendSingleConversation;
     private Button mSendTwoConversations;
@@ -75,13 +77,13 @@ public class MessagingFragment extends Fragment implements View.OnClickListener 
 
     private final SharedPreferences.OnSharedPreferenceChangeListener listener =
             new SharedPreferences.OnSharedPreferenceChangeListener() {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            if (MessageLogger.LOG_KEY.equals(key)) {
-                mDataPortView.setText(MessageLogger.getAllMessages(getActivity()));
-            }
-        }
-    };
+                @Override
+                public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                    if (MessageLogger.LOG_KEY.equals(key)) {
+                        mDataPortView.setText(MessageLogger.getAllMessages(getActivity()));
+                    }
+                }
+            };
 
     public MessagingFragment() {
     }
@@ -90,7 +92,7 @@ public class MessagingFragment extends Fragment implements View.OnClickListener 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.e(TAG,"onCreateView");
+        Log.e(TAG, "onCreateView");
         View rootView = inflater.inflate(R.layout.fragment_message_me, container, false);
 
         mSendSingleConversation = (Button) rootView.findViewById(R.id.send_1_conversation);
@@ -99,8 +101,7 @@ public class MessagingFragment extends Fragment implements View.OnClickListener 
         mSendTwoConversations = (Button) rootView.findViewById(R.id.send_2_conversations);
         mSendTwoConversations.setOnClickListener(this);
 
-        mSendConversationWithThreeMessages =
-                (Button) rootView.findViewById(R.id.send_1_conversation_3_messages);
+        mSendConversationWithThreeMessages = (Button) rootView.findViewById(R.id.send_1_conversation_3_messages);
         mSendConversationWithThreeMessages.setOnClickListener(this);
 
         mDataPortView = (TextView) rootView.findViewById(R.id.data_port);
@@ -110,7 +111,9 @@ public class MessagingFragment extends Fragment implements View.OnClickListener 
         mClearLogButton.setOnClickListener(this);
 
         setButtonsState(false);
-        HelperUtil.addFloatView(getContext(), mSendSingleConversation);
+        //增加一个悬浮窗，可以在锁屏下和下拉状态栏的时候显示
+        //HelperUtil.addFloatView(getContext(), mSendSingleConversation);
+        NewWindowUtil.getInstance().addFloatView(getActivity(), SEDN_MESSAGE_NOTIFICATION, this);
 
         return rootView;
     }
@@ -131,7 +134,7 @@ public class MessagingFragment extends Fragment implements View.OnClickListener 
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        Log.e(TAG,"onCreate");
+        Log.e(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         getActivity().bindService(new Intent(getActivity(), MessagingService.class), mConnection,
                 Context.BIND_AUTO_CREATE);
@@ -139,20 +142,20 @@ public class MessagingFragment extends Fragment implements View.OnClickListener 
 
     @Override
     public void onStart() {
-        Log.e(TAG,"onStart");
+        Log.e(TAG, "onStart");
         super.onStart();
     }
 
     @Override
     public void onPause() {
-        Log.e(TAG,"onPause");
+        Log.e(TAG, "onPause");
         super.onPause();
         MessageLogger.getPrefs(getActivity()).unregisterOnSharedPreferenceChangeListener(listener);
     }
 
     @Override
     public void onResume() {
-        Log.e(TAG,"onResume");
+        Log.e(TAG, "onResume");
         super.onResume();
         mDataPortView.setText(MessageLogger.getAllMessages(getActivity()));
         MessageLogger.getPrefs(getActivity()).registerOnSharedPreferenceChangeListener(listener);
@@ -160,20 +163,21 @@ public class MessagingFragment extends Fragment implements View.OnClickListener 
 
     @Override
     public void onStop() {
-        Log.e(TAG,"onStop");
+        Log.e(TAG, "onStop");
         super.onStop();
     }
 
     @TargetApi(Build.VERSION_CODES.M)
     @Override
     public void onDestroy() {
-        Log.e(TAG,"onDestroy");
-        HelperUtil.removeFloatView();
-        super.onDestroy();
+        Log.e(TAG, "onDestroy");
+        //HelperUtil.removeFloatView();
+        NewWindowUtil.getInstance().removeFloatView(SEDN_MESSAGE_NOTIFICATION);
         if (mBound) {
             getActivity().unbindService(mConnection);
             mBound = false;
         }
+        super.onDestroy();
     }
 
     private void sendMsg(int howManyConversations, int messagesPerConversation) {
@@ -193,5 +197,18 @@ public class MessagingFragment extends Fragment implements View.OnClickListener 
         mSendSingleConversation.setEnabled(enable);
         mSendTwoConversations.setEnabled(enable);
         mSendConversationWithThreeMessages.setEnabled(enable);
+    }
+
+    @Override
+    public void onAddView() {
+    }
+
+    @Override
+    public void onRemoveView() {
+    }
+
+    @Override
+    public void onClickView() {
+        mSendSingleConversation.performClick();
     }
 }

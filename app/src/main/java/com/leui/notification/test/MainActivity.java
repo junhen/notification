@@ -11,20 +11,14 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Color;
-import android.graphics.PixelFormat;
 import android.graphics.Point;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
-import android.os.Process;
-import android.os.UserHandle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -32,18 +26,11 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.ViewGroup.MarginLayoutParams;
-import android.view.WindowManager.LayoutParams;
 import android.widget.TextView;
-
-import com.leui.notification.test.R;
-
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -61,15 +48,12 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 	private Fragment mFragType, mFragPriority,mDemoMode,Frequency,Messager,mActivitys;
 	private int NOTIF_REF = 1;
 	private ArrayList<Integer> mIds = new ArrayList<>();
-	private NotificationManager manager;
+	private NotificationManager mNotificaitonManager;
 	Display mDisplay;
     Point mCurrentDisplaySize = new Point();
     DisplayMetrics mDisplayMetrics = new DisplayMetrics();
     KeyguardManager mKeyguardManager;
     KeyguardManager.KeyguardLock mKeyguardLock;
-    private WindowManager wm;
-    private View floatView;
-    private WindowManager.LayoutParams wmParams;
 
     private void tranlateStatusBarAndMargeContent(Window win){
         final int flag = 
@@ -101,21 +85,17 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		setContentView(R.layout.activity_main);
 		final Window win = getWindow();
 		final WindowManager.LayoutParams params = win.getAttributes();
-		if(SHOW_WHEN_LOCK)
-		    params.flags |= WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
-		if(DISMISS_KEYGUARD)
-		    params.flags |= WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD;
+		if(SHOW_WHEN_LOCK) params.flags |= WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
+		if(DISMISS_KEYGUARD) params.flags |= WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD;
 		mKeyguardManager = (KeyguardManager) this.getSystemService(Context.KEYGUARD_SERVICE);
 		Log.d(TAG,"onCreate(),isKeyguardLocked:"+mKeyguardManager.isKeyguardLocked());
 		if(DISABLE_KEYGUARD){
     		mKeyguardLock = mKeyguardManager.newKeyguardLock("MainActivity");
     		mKeyguardLock.disableKeyguard();
 		}
-		
 		// Set up the action bar.
 		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-
 		// For each of the sections in the app, add a tab to the action bar.
 		actionBar.addTab(actionBar.newTab().setText(R.string.title_section1).setTabListener(this));
 		actionBar.addTab(actionBar.newTab().setText(R.string.title_section2).setTabListener(this));
@@ -123,15 +103,10 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
         actionBar.addTab(actionBar.newTab().setText(R.string.title_section4).setTabListener(this));
 		actionBar.addTab(actionBar.newTab().setText(R.string.title_section5).setTabListener(this));
 		actionBar.addTab(actionBar.newTab().setText(R.string.title_section6).setTabListener(this));
-
-
-		manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		mNotificaitonManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		//tranlateStatusBarAndMargeContent(getWindow());
-		
-		mDisplay = ((WindowManager)this.getSystemService(Context.WINDOW_SERVICE))
-                .getDefaultDisplay();
+		mDisplay = ((WindowManager)this.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 		updateDisplaySize();
-		
 	}
 
 //	 private com.android.internal.widget.LockPatternUtils  mLockPatternUtils;
@@ -184,15 +159,15 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 	}
 
 	public void dismissNotification(int id) {
-		manager.cancel("sameTag", id);
+		mNotificaitonManager.cancel("sameTag", id);
 	}
 
 	public void sendNotification(int notif_id,Notification notif){
-        manager.notify("sameTag",notif_id, notif);
+		mNotificaitonManager.notify("sameTag",notif_id, notif);
     }
 
 	public void cancelNotification(int notif_id){
-	    manager.cancel("sameTag",notif_id);
+		mNotificaitonManager.cancel("sameTag",notif_id);
 	}
 
 	public void showDefaultNotification(View v) {	}
@@ -364,7 +339,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
         }catch (IOException e) {
             e.printStackTrace();
         }
-		Log.d(TAG,"runCmd    result = "+result);
+		Log.d(TAG,"runCmd  result = "+result);
         return result;
     }
     
@@ -418,7 +393,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
     @Override
     protected void onDestroy() {
         Log.d(TAG,"onDestroy");
-        if(mKeyguardLock != null){
+        if(DISABLE_KEYGUARD && mKeyguardLock != null){
             mKeyguardLock.reenableKeyguard();
         }
         super.onDestroy();

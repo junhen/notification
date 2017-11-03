@@ -52,35 +52,12 @@ public class DeviceMethod {
             Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
             intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
             intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "提示文字");
-
             /*Intent intent = new Intent();
             intent.setComponent(new ComponentName("com.android.settings","com.android.settings.DeviceAdminAdd"));
             intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);*/
-
             //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             Log.d(TAG, "onActivate intent.flags = "+Integer.toHexString(intent.getFlags()));
             mContext.startActivity(intent);
-            //activity.startActivityAsUser(intent, new UserHandle(userId));
-            /*ResolveInfo ri = new ResolveInfo();
-            PackageManager packageManager = mContext.getPackageManager();
-            ComponentName who = security.getAdminComponent();
-            DeviceAdminInfo mDeviceAdmin = null;
-            try {
-                ActivityInfo ai = packageManager.getReceiverInfo(who, PackageManager.GET_META_DATA);
-                ri.activityInfo = ai;
-                mDeviceAdmin = new DeviceAdminInfo(this, ri);
-
-                devicePolicyManager.setActiveAdmin(mDeviceAdmin.getComponent(), false);
-                tryAdvanceSecurity(mAccount);
-            } catch (Exception e) {
-                // Something bad happened...  could be that it was
-                // already set, though.
-                Log.w(TAG, "Exception trying to activate admin "
-                        + mDeviceAdmin.getComponent(), e);
-                if (mDPM.isAdminActive(mDeviceAdmin.getComponent())) {
-                    tryAdvanceSecurity(mAccount);
-                }
-            }*/
         } else {
             Toast.makeText(mContext, "设备已经激活,请勿重复激活", Toast.LENGTH_SHORT).show();
         }

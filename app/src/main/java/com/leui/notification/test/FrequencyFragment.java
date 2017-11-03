@@ -3,7 +3,6 @@ package com.leui.notification.test;
 import android.app.Fragment;
 import android.app.KeyguardManager;
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
@@ -17,7 +16,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,17 +26,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.leui.notification.test.R;
-
 import java.lang.reflect.Field;
 
 import xx.deviceManager.DeviceMethod;
 import xx.deviceManager.MyDeviceAdminReceiver;
 import xx.util.NewWindowUtil;
 
-
-public class FrequencyFragment extends Fragment implements OnClickListener, NewWindowUtil.InitCallback {
+public class FrequencyFragment extends Fragment implements OnClickListener, NewWindowUtil.Callback {
     private static final String TAG = FrequencyFragment.class.getSimpleName();
+    private static String ON_OFF_KEYGUARD = "on_off_keyguard";
 
     TextView mStatus;
     EditText mFrequency;
@@ -48,6 +44,14 @@ public class FrequencyFragment extends Fragment implements OnClickListener, NewW
     private int msgDelay = 100;//10hz
     private long lastNotificationTime = 0;
     private Randomizer mRandomizer;
+
+    private Runnable updateNotification = new Runnable() {
+        @Override
+        public void run() {
+            sendNotification();
+            mStatus.postDelayed(updateNotification, msgDelay);
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -72,7 +76,7 @@ public class FrequencyFragment extends Fragment implements OnClickListener, NewW
     @Override
     public void onDestroyView() {
         Log.e(TAG, "onDestroyView");
-        NewWindowUtil.getInstance(getActivity()).removeFloatView();
+        NewWindowUtil.getInstance().removeFloatView(ON_OFF_KEYGUARD);
         super.onDestroyView();
     }
 
@@ -100,47 +104,48 @@ public class FrequencyFragment extends Fragment implements OnClickListener, NewW
                 break;
             case R.id.btn_add_float_view:
                 Log.e(TAG, "btn_add_float_view");
-                if (mNewWindowUtil == null) {
+                /*if (mNewWindowUtil == null) {
                     mNewWindowUtil = NewWindowUtil.getInstance(getActivity());
                     mNewWindowUtil.addFloatView(this);
-                }
+                }*/
+                NewWindowUtil.getInstance().addFloatView(mContext, ON_OFF_KEYGUARD, this);
                 break;
             case R.id.btn_remove_float_view:
                 Log.e(TAG, "btn_remove_float_view");
-                if (mNewWindowUtil != null) {
+                /*if (mNewWindowUtil != null) {
                     mNewWindowUtil.removeFloatView();
                     NewWindowUtil.deleteInstance(getActivity());
                     mNewWindowUtil = null;
                     isStarted = false;
-                }
+                }*/
+                NewWindowUtil.getInstance().removeFloatView(ON_OFF_KEYGUARD);
                 break;
             default:
                 Log.e(TAG, "unhandle event,xx.view:" + v);
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
+    //@RequiresApi(api = Build.VERSION_CODES.M)
     private void sendNotification() {
-        Notification notif = null;
         Notification.Builder builder = new Notification.Builder(getActivity().getApplicationContext());
         final int time = (int) (System.currentTimeMillis() % 9);
         PendingIntent intent = PendingIntent.getActivity(getActivity(), 0, new Intent(), 0);
         for (int i = 0; i < 3; i++) {
             builder.addAction(mRandomizer.getRandomIconId(), "" + time, intent);
         }
-
-        builder
-                .setContentTitle("Reduced BigText title" + time)
+        builder.setContentTitle("Reduced BigText title" + time)
                 .setContentText("" + getActivity().getPackageName() + System.currentTimeMillis())
                 .setContentInfo("Info" + time)
                 .setShowWhen(false)
                 .setTicker("getBigTextStyle" + System.currentTimeMillis())
-                .setSmallIcon(mRandomizer.getRandomIconId())
-                .setLargeIcon(Icon.createWithResource(getContext(), mRandomizer.getRandomIconId()));
+                .setSmallIcon(mRandomizer.getRandomIconId());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            builder.setLargeIcon(Icon.createWithResource(getContext(), mRandomizer.getRandomIconId()));
+        }
 
-        notif = new Notification.BigTextStyle(builder)
-                .bigText("" + getActivity().getPackageName() + " " + System.currentTimeMillis() + "\n" + getResources().getString(R.string.big_text))
+        Notification notif = new Notification.BigTextStyle(builder)
                 .setBigContentTitle("Expanded BigText title" + time)
+                .bigText(getActivity().getPackageName() + " " + System.currentTimeMillis() + "\n" + getResources().getString(R.string.big_text))
                 .setSummaryText("Summary text" + time)
                 .build();
 
@@ -154,8 +159,8 @@ public class FrequencyFragment extends Fragment implements OnClickListener, NewW
     /**
      * set statusbar notification icon
      *
-     * @param Notification
-     * @param iconId       id
+     * @param notification
+     * @param iconId
      * @return
      */
     public static boolean setNotificationIcon(Notification notification, int iconId) {
@@ -174,14 +179,6 @@ public class FrequencyFragment extends Fragment implements OnClickListener, NewW
             return result;
         }
     }
-
-    Runnable updateNotification = new Runnable() {
-        @Override
-        public void run() {
-            sendNotification();
-            mStatus.postDelayed(updateNotification, msgDelay);
-        }
-    };
 
     //一下代码是加锁和解锁的demo，通过点击add和remove，增加和删除一个悬浮窗floatview
     private NewWindowUtil mNewWindowUtil = null;
@@ -253,16 +250,11 @@ public class FrequencyFragment extends Fragment implements OnClickListener, NewW
     private void activeManage() {
         Log.e(TAG, "activeManage  mActivity = " + getActivity() + ",   componentName = " + componentName);
         DeviceMethod.getInstance(mContext).onActivate();
-        /*if (mActivity == null) return;
-        Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
-        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
-        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, TAG);
-        mActivity.startActivityForResult(intent, REQUEST_CODE);*/
     }
 
 
     @Override
-    public void addView() {
+    public void onAddView() {
         mKeyguardManager = (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
         mKeyguardLock = mKeyguardManager.newKeyguardLock(TAG);
         mPowerManager = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
@@ -275,7 +267,7 @@ public class FrequencyFragment extends Fragment implements OnClickListener, NewW
     }
 
     @Override
-    public void removeView() {
+    public void onRemoveView() {
         mContext.unregisterReceiver(mBroadcastReceiver);
         mHandler.removeCallbacks(runnable1);
         mHandler.removeCallbacks(runnable2);
@@ -285,7 +277,7 @@ public class FrequencyFragment extends Fragment implements OnClickListener, NewW
     @Override
     public void onClickView() {
         isStarted = !isStarted;
-        if(isStarted) {
+        if (isStarted) {
             N = 0;
             mHandler.post(runnable1);
         }

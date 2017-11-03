@@ -1,123 +1,93 @@
 package xx.util;
 
-import android.app.Activity;
-import android.app.Application;
-import android.app.KeyguardManager;
-import android.app.Service;
-import android.app.admin.DevicePolicyManager;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.os.Handler;
-import android.os.PowerManager;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-
-import xx.deviceManager.DeviceMethod;
-import xx.deviceManager.MyDeviceAdminReceiver;
 
 /**
  * Created by xiaoxin on 17-10-31.
+ *
+ * 使用getInstance获取此工具类单例
+ * 调用addFloatView增加一个悬浮窗，主要是独一无二的name，还有必须的callback
+ * 调用removeFloatView删除对应那么的悬浮窗
+ * callback三个功能：初始化，结束收尾，点击事件
  */
 
 public class NewWindowUtil {
     private static final String TAG = "NewWindowUtil";
-    private static int REQUEST_CODE = 0x01;
-    private static HashMap<Integer, NewWindowUtil> mNewWindowUtils;
+    private static final List<FloatViewHolder> mFloatViewHolders = new ArrayList<>();
+    private static NewWindowUtil mInstance;
 
-    private WindowManager wm;
-    private WindowManager.LayoutParams wmParams;
-    private View floatView;
-    private Application mApplication;
-    private Activity mActivity;
-    private Service mService;
-    private Context mContext;
-
-    private InitCallback mCallback;
-
-    public void setCallback(InitCallback callback) {
-        mCallback = callback;
-    }
-
-    public static NewWindowUtil getInstance(Context context) {
-        if (mNewWindowUtils == null) mNewWindowUtils = new HashMap<>();
-        NewWindowUtil newWindowUtil;
-        int contextHashcode = context.hashCode();
-        if (!mNewWindowUtils.keySet().contains(contextHashcode)) {
-            newWindowUtil = new NewWindowUtil();
-            if (context instanceof Application) {
-                newWindowUtil.mApplication = (Application) context;
-            }
-            if (context instanceof Activity) {
-                newWindowUtil.mActivity = (Activity) context;
-            }
-            if (context instanceof Service) {
-                newWindowUtil.mService = (Service) context;
-            }
-            newWindowUtil.mContext = context;
-            mNewWindowUtils.put(contextHashcode, newWindowUtil);
-        } else {
-            newWindowUtil = mNewWindowUtils.get(contextHashcode);
+    public static synchronized NewWindowUtil getInstance() {
+        if (mInstance == null) {
+            mInstance = new NewWindowUtil();
         }
-        Log.d(TAG, "getInstance  key = " + context + ",   newWindowUtil = " + newWindowUtil);
-        return newWindowUtil;
+        Log.d(TAG, "getInstance = "+mInstance);
+        return mInstance;
     }
 
-    public static void deleteInstance(Context context) {
-        int contextHashcode = context.hashCode();
-        mNewWindowUtils.remove(contextHashcode);
+    public void addFloatView(Context context, String name, Callback callback) {
+        addFloatView(context, name, callback, getDefaultView(context, callback), getDefaultLayoutParams());
     }
 
-    public void addFloatView(InitCallback callback) {
-        addFloatView(callback, getDefaultView(), getDefaultLayoutParams());
-    }
-
-    public void addFloatView(InitCallback callback, View view, WindowManager.LayoutParams lp) {
-        if(callback == null) {
-            Toast.makeText(mContext, "has no InitCallback", Toast.LENGTH_SHORT);
+    public void addFloatView(Context context, String name, Callback callback, View view, WindowManager.LayoutParams lp) {
+        if (callback == null) {
+            Log.d(TAG, "addFloatView,  callback can not be null.");
+            Toast.makeText(context, "has no Callback", Toast.LENGTH_SHORT);
             return;
         }
-        if (wm == null) {
-            //经过测试，这里两处可以使用activity的context
-            wm = (WindowManager) mContext.getApplicationContext().getSystemService("window");
+
+        if (mFloatViewHolders.size() > 0) {
+            synchronized (mFloatViewHolders) {
+                for (FloatViewHolder fd : mFloatViewHolders) {
+                    if (fd.name.equals(name)) {
+                        Log.d(TAG, "addFloatView,  the wm has have the float view.");
+                        Toast.makeText(context, "the wm has have the float view.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                }
+            }
         }
-        mCallback = callback;
-        removeFloatView();
-        floatView = view;
-        wmParams = lp;
-        wm.addView(floatView, wmParams);
-        mCallback.addView();
+
+        FloatViewHolder floatViewHolder = new FloatViewHolder(name, view, callback);
+        WindowManager wm = (WindowManager) context.getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        wm.addView(floatViewHolder.floatView, lp);
+        floatViewHolder.callback.onAddView();
+        synchronized (mFloatViewHolders) {
+            mFloatViewHolders.add(floatViewHolder);
+        }
     }
 
-    public void removeFloatView() {
-        if (floatView != null) {
-            wm.removeView(floatView);
-            floatView = null;
-            wmParams = null;
-            if (mCallback != null) mCallback.removeView();
+    public void removeFloatView(String name) {
+        if (mFloatViewHolders.size() > 0) {
+            synchronized (mFloatViewHolders) {
+                for (FloatViewHolder fd : mFloatViewHolders) {
+                    if (fd.name.equals(name)) {
+                        fd.callback.onRemoveView();
+                        WindowManager wm = (WindowManager) fd.floatView.getContext().getSystemService(Context.WINDOW_SERVICE);
+                        wm.removeView(fd.floatView);
+                        mFloatViewHolders.remove(fd);
+                    }
+                }
+            }
         }
     }
 
-    private View getDefaultView() {
-        View view = new View(mContext.getApplicationContext());
+    private View getDefaultView(Context context, final Callback callback) {
+        View view = new View(context.getApplicationContext());
         view.setBackgroundColor(Color.GREEN);
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCallback.onClickView();
+                callback.onClickView();
             }
         });
         view.setOnTouchListener(new View.OnTouchListener() {
@@ -141,7 +111,7 @@ public class NewWindowUtil {
                 | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
                 | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS  //可以拖动到屏幕之外
         ;
-        lp.gravity = Gravity.RIGHT | Gravity.BOTTOM;
+        lp.gravity = Gravity.END | Gravity.BOTTOM;
         //lp.x = 0;
         //lp.y = 1000;
 
@@ -154,29 +124,38 @@ public class NewWindowUtil {
         return lp;
     }
 
-    /*private   void clickView() {
-        if (mView != null)
-            mView.performClick();
-    }*/
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        if (mContext instanceof Application) {
-            sb.append("mApplication = " + mApplication);
-        }
-        if (mContext instanceof Activity) {
-            sb.append("mActivity = " + mActivity);
-        }
-        if (mContext instanceof Service) {
-            sb.append("mService = " + mService);
+        if (mFloatViewHolders.size() < 1) {
+            sb.append("has no float view");
+        } else {
+            for (FloatViewHolder fd : mFloatViewHolders) {
+                sb.append("name: ").append(fd.name).append(",    flootView: ").append(fd.floatView);
+                sb.append("\n");
+            }
         }
         return sb.toString();
     }
 
-    public interface InitCallback {
-        void addView();
-        void removeView();
+    private static class FloatViewHolder {
+        private String name;
+        private View floatView;
+        private Callback callback;
+
+        public FloatViewHolder(String name, View floatView, Callback callback) {
+            this.name = name;
+            this.floatView = floatView;
+            this.callback = callback;
+        }
+    }
+
+    //该接口可以为悬浮窗做初始化和结束收尾的工作，增加点击事件的功能
+    public interface Callback {
+        void onAddView();
+
+        void onRemoveView();
+
         void onClickView();
     }
 }
