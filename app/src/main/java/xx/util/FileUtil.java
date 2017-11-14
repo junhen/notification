@@ -7,6 +7,7 @@ package xx.util;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Environment;
 import android.text.TextUtils;
 
 import java.io.BufferedReader;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -210,7 +212,7 @@ public class FileUtil {
             OutputStream os = new FileOutputStream(toFile);
             int byteCount = 0;
             byte[] bytes = new byte[1024];
-            
+
             while ((byteCount = is.read(bytes)) != -1) {
                 os.write(bytes, 0, byteCount);
             }
@@ -227,7 +229,7 @@ public class FileUtil {
         directionList.clear();
         fileList.clear();
         for (int i = 0; i < file.length; i++) {
-            if(file[i].isDirectory())
+            if (file[i].isDirectory())
                 directionList.add(file[i].getAbsolutePath());
             else if (file[i].isFile())
                 fileList.add(file[i].getAbsolutePath());
@@ -421,7 +423,7 @@ public class FileUtil {
     /**
      * 创建目录
      *
-     * @param dir             目录名称
+     * @param dir                 目录名称
      * @param needCreateParentDir 如果父目录不存在，是否创建父目录
      * @return
      */
@@ -460,6 +462,97 @@ public class FileUtil {
             }
         }
         return line;
+    }
+
+    public static String getSDPath() {
+        if (hasSdcard()) {
+            return Environment.getExternalStorageDirectory().toString();//获取跟目录
+        } else {
+            return null;
+        }
+    }
+
+    public static boolean hasSdcard() {
+        return Environment.getExternalStorageState()
+                .equals(android.os.Environment.MEDIA_MOUNTED);
+    }
+
+    //二进制文件方法
+    public static void copyFile(String src, String dest) {
+
+        //1.提供读入和写入的文件
+        File f1 = new File(src);
+        File f2 = new File(dest);
+        //2.提供相应的流对象
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+        try {
+            fis = new FileInputStream(f1);
+            fos = new FileOutputStream(f2);
+            //3.实现复制
+            byte[] b = new byte[200];
+            int len;
+            while ((len = fis.read(b)) != -1) {
+                fos.write(b, 0, len);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    //关闭输入流
+                    fis.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            if (fos != null) {
+                try {
+                    //关闭输出流
+                    fos.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+    //文本文件拷贝方法
+    public static void fileCopy(String src, String des) {
+
+        //字符型处理流
+        BufferedReader br = null;
+        PrintStream ps = null;
+
+        try {
+            //输入与输出流
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(src)));
+            ps = new PrintStream(new FileOutputStream(des));
+            String s = null;
+            while ((s = br.readLine()) != null) {
+                ps.println(s);
+                ps.flush();
+            }
+
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            try {
+                //关闭输入输出流
+                if (br != null) br.close();
+                if (ps != null) ps.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
     }
 
 }

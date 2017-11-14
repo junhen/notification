@@ -45,7 +45,8 @@ android {
     buildTypes { //build类型
         release { //发布
             minifyEnabled false //混淆关闭/开启
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt' //指定混淆规则文件
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            //指定混淆规则文件
             //signingConfig signingConfigs.release //设置签名信息
         }
         debug {//调试
@@ -74,6 +75,6 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.squareup.okhttp3:okhttp:3.9.0'
-    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.2'
-    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.2'
+    /*debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.2'*/
+
 }

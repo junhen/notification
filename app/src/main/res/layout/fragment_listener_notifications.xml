@@ -1,141 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <Button
-        android:id="@+id/listener_notification"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="10dip"
-        android:text="listener-notification" />
-
-    <Button
-        android:id="@+id/test_sync"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="10dip"
-        android:text="test_sync" />
-
-    <Button
-        android:id="@+id/view_animation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="10dip"
-        android:text="view_animation" />
-
-    <Button
-        android:id="@+id/socket_test"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="10dip"
-        android:text="socket_test" />
-
-    <Button
-        android:id="@+id/test_activity_file"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="10dip"
-        android:text="test_activity_file" />
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <Button
-            android:id="@+id/server_test_service_start"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:padding="10dip"
-            android:text="start_service" />
-
-        <Button
-            android:id="@+id/server_test_service_stop"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:padding="10dip"
-            android:text="stop_service" />
-
-        <Button
-            android:id="@+id/server_test_service_bind"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:padding="10dip"
-            android:text="bind_service" />
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/widget_activity_bn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="10dip"
-        android:text="widget_activity" />
-
-    <Button
-        android:id="@+id/vector_drawable_activity_bn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="10dip"
-        android:text="vector_drawable_activity" />
-
-    <Button
-        android:id="@+id/surfaceview_activity_bn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="10dip"
-        android:text="surfaceview_activity_bn" />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-        <Button
-            android:id="@+id/xml_parser_activity_bn"
+            android:id="@+id/listener_notification"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:padding="10dip"
-            android:text="xml_parser_activity_bn" />
+            android:text="listener-notification" />
 
         <Button
-            android:id="@+id/json_parser_activity_bn"
+            android:id="@+id/test_sync"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:padding="10dip"
-            android:text="json_parser_activity_bn" />
+            android:text="test_sync" />
+
+        <Button
+            android:id="@+id/view_animation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="10dip"
+            android:text="view_animation" />
+
+        <Button
+            android:id="@+id/socket_test"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="10dip"
+            android:text="socket_test" />
+
+        <Button
+            android:id="@+id/test_activity_file"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="10dip"
+            android:text="test_activity_file" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/server_test_service_start"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:padding="10dip"
+                android:text="start_service" />
+
+            <Button
+                android:id="@+id/server_test_service_stop"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:padding="10dip"
+                android:text="stop_service" />
+
+            <Button
+                android:id="@+id/server_test_service_bind"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:padding="10dip"
+                android:text="bind_service" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/widget_activity_bn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="10dip"
+            android:text="widget_activity" />
+
+        <Button
+            android:id="@+id/vector_drawable_activity_bn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="10dip"
+            android:text="vector_drawable_activity" />
+
+        <Button
+            android:id="@+id/surfaceview_activity_bn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="10dip"
+            android:text="surfaceview_activity_bn" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/xml_parser_activity_bn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:padding="10dip"
+                android:text="xml_parser_activity_bn" />
+
+            <Button
+                android:id="@+id/json_parser_activity_bn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:padding="10dip"
+                android:text="json_parser_activity_bn" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/lunar_game_activity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="10dip"
+            android:text="lunar_game_activity" />
+
+        <Button
+            android:id="@+id/text_reader_activity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="10dip"
+            android:text="text_reader_activity" />
+
+        <Button
+            android:id="@+id/recorder_video_activity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="10dip"
+            android:text="recorder_video_activity" />
+
+        <Button
+            android:id="@+id/recorder_video_activity_two"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="10dip"
+            android:text="recorder_video_activity_two" />
     </LinearLayout>
-
-    <Button
-        android:id="@+id/lunar_game_activity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="10dip"
-        android:text="lunar_game_activity" />
-    <Button
-        android:id="@+id/text_reader_activity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="10dip"
-        android:text="text_reader_activity" />
+</ScrollView>
 
 
-</LinearLayout>
