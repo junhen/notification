@@ -19,15 +19,24 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 
 import com.leui.notification.test.R;
 
-//import xx.util.FileUtil;
+import xx.util.FileUtil;
+import xx.util.UploadUtil;
 
 public class RecorderVideoActivityTwo extends Activity
         implements SurfaceHolder.Callback,
@@ -35,6 +44,9 @@ public class RecorderVideoActivityTwo extends Activity
         MediaRecorder.OnInfoListener {
 
     private static final String TAG = "Recorder-TAG";
+    //private static String actionUrl = "http://10.100.1.208/receive_file.php";
+    private static String actionUrl = "https://www.baidu.com/";
+
     private SurfaceView mSurfaceview;
     private SurfaceHolder mSurfaceHolder;
     private Button mBtnStartStop;
@@ -68,7 +80,7 @@ public class RecorderVideoActivityTwo extends Activity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate");
+        Log.d(TAG, "onCreate  "+ UploadUtil.BOUNDARY);
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_recorder_video_two);
@@ -220,6 +232,8 @@ public class RecorderVideoActivityTwo extends Activity
 
     private void releaseRecodeVideo() {
         Log.d(TAG, "releaseRecodeVideo");
+        if(path != null)
+            sendRecorde();
         handler.removeCallbacks(runnable);
         if (mRecorder != null) {
             mRecorder.setOnErrorListener(null);
@@ -312,19 +326,24 @@ public class RecorderVideoActivityTwo extends Activity
         Log.d(TAG, "onInfo mr: " + mr + ",  what: " + mr + ",  extra: " + extra);
         if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
             Log.v(TAG, "onInfo max duration reached");
-            stopRecording();
+            //记录一个新视频
+            resetRecorder();
         }
 
     }
 
-    public void stopRecording() {
-        Log.d(TAG, "stopRecording");
+    /**
+     * 使用子线程上传记录好的视频
+     */
+    public void sendRecorde() {
+        Log.d(TAG, "sendRecorde");
+        final String lastPath = path;
+        path = null;
         paths.add(path);
         mUpHandler.post(new Runnable() {
             @Override
             public void run() {
-                //这里是以后上传代码用，现在不要看这个方法
-                String pathCP = getSDPath();
+                /*String pathCP = getSDPath();
                 if (pathCP != null) {
                     File dir = new File(pathCP + "/recordtestcp");
                     if (!dir.exists()) {
@@ -333,16 +352,21 @@ public class RecorderVideoActivityTwo extends Activity
                     pathCP = dir + "/" + date + ".mp4";
                     Log.d(TAG, "onCreate   end path: " + path + ",  threadid : ");
                     Log.d(TAG, "onCreate   end pathCP: " + pathCP + ",  threadid : " + Process.myTid());
-                    //FileUtil.copyFile(path, pathCP);
+                    FileUtil.copyFile(path, pathCP);
                 } else {
                     Log.d(TAG, "onCreate   end pathCP: " + pathCP);
                     return;
-                }
+                }*/
 
+                //这里是以后上传代码用，现在不要看这个方法
+                try {
+                    Thread.currentThread().sleep(12000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                uploadFile(actionUrl, lastPath);
             }
         });
-        //记录一个新视频
-        resetRecorder();
     }
 
     //记录一个新视频
@@ -368,6 +392,74 @@ public class RecorderVideoActivityTwo extends Activity
         @Override
         protected void onLooperPrepared() {
             mUpHandler = new Handler(getLooper());
+        }
+    }
+
+    /* 上传文件至Server，uploadUrl：接收文件的处理页面 */
+    private void uploadFile(String uploadUrl, String srcPath) {
+        Log.d(TAG, "uploadFile  uploadUrl: "+uploadUrl+",   srcPath: "+srcPath);
+        if(true) {
+            return;
+        }
+        String end = "\r\n";
+        String twoHyphens = "--";
+        String boundary = "******";
+        try {
+            URL url = new URL(uploadUrl);
+            Log.d(TAG, "uploadFile  1111111111111111111");
+            HttpURLConnection httpURLConnection = (HttpURLConnection) url
+                    .openConnection();
+            Log.d(TAG, "uploadFile  22222222222222");
+            // 设置每次传输的流大小，可以有效防止手机因为内存不足崩溃
+            // 此方法用于在预先不知道内容长度时启用没有进行内部缓冲的 HTTP 请求正文的流。
+            httpURLConnection.setChunkedStreamingMode(128 * 1024);// 128K
+            // 允许输入输出流
+            httpURLConnection.setDoInput(true);
+            httpURLConnection.setDoOutput(true);
+            httpURLConnection.setUseCaches(false);
+            // 使用POST方法
+            httpURLConnection.setRequestMethod("POST");
+            httpURLConnection.setRequestProperty("Connection", "Keep-Alive");
+            httpURLConnection.setRequestProperty("Charset", "UTF-8");
+            httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+
+            DataOutputStream dos = new DataOutputStream(httpURLConnection.getOutputStream());
+            dos.writeBytes(twoHyphens + boundary + end);
+            dos.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\"; filename=\""
+                    + srcPath.substring(srcPath.lastIndexOf("/") + 1) + "\""
+                    + end);
+            dos.writeBytes(end);
+            Log.d(TAG, "uploadFile  3333333333333  dos: "+dos);
+
+            FileInputStream fis = new FileInputStream(srcPath);
+            byte[] buffer = new byte[8192]; // 8k
+            int count = 0;
+            // 读取文件
+            while ((count = fis.read(buffer)) != -1)
+            {
+                dos.write(buffer, 0, count);
+            }
+            fis.close();
+
+            dos.writeBytes(end);
+            dos.writeBytes(twoHyphens + boundary + twoHyphens + end);
+            Log.d(TAG, "uploadFile  44444444444  dos: "+dos);
+            dos.flush();
+
+            InputStream is = httpURLConnection.getInputStream();
+            InputStreamReader isr = new InputStreamReader(is, "utf-8");
+            BufferedReader br = new BufferedReader(isr);
+            String result = br.readLine();
+
+            Log.d(TAG, "uploadFile  5555555555    result: "+result);
+            Toast.makeText(this, result, Toast.LENGTH_LONG).show();
+            dos.close();
+            is.close();
+
+        } catch (Exception e) {
+            Log.d(TAG, "uploadFile Exception e: "+e);
+            e.printStackTrace();
+            setTitle(e.getMessage());
         }
     }
 }

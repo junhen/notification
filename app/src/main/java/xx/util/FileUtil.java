@@ -495,6 +495,7 @@ public class FileUtil {
             while ((len = fis.read(b)) != -1) {
                 fos.write(b, 0, len);
             }
+            fos.write("\r\n".getBytes());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -553,6 +554,41 @@ public class FileUtil {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static ByteArrayInputStream getByteArrayInputStream(File file){
+        return new ByteArrayInputStream(getByetsFromFile(file));
+    }
+    /**
+     *  ByteArrayInputStream ins = new ByteArrayInputStream(picBytes);
+     * @param file
+     * @return
+     */
+    public static byte[] getByetsFromFile(File file){
+        FileInputStream is = null;
+        // 获取文件大小
+        long length = file.length();
+        // 创建一个数据来保存文件数据
+        byte[] fileData = new byte[(int)length];
+
+        try {
+            is = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        int bytesRead=0;
+        // 读取数据到byte数组中
+        while(bytesRead != fileData.length) {
+            try {
+                bytesRead += is.read(fileData, bytesRead, fileData.length - bytesRead);
+                if(is != null)
+                    is.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        return fileData;
     }
 
 }
