@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import xx.activity.RecorderVideoActivity;
+import xx.activity.RecorderVideoActivityOne;
 import xx.activity.RecorderVideoActivityTwo;
 import xx.activity.SocketBindActivity;
 import xx.activity.SurfaceViewActivity;
@@ -113,6 +114,7 @@ public class ActivitysFragment extends Fragment implements View.OnClickListener 
         mTextReaderActivityBn = (Button) view.findViewById(R.id.text_reader_activity);
         mTextReaderActivityBn.setOnClickListener(this);
         view.findViewById(R.id.recorder_video_activity).setOnClickListener(this);
+        view.findViewById(R.id.recorder_video_activity_one).setOnClickListener(this);
         view.findViewById(R.id.recorder_video_activity_two).setOnClickListener(this);
 
         return view;
@@ -191,6 +193,10 @@ public class ActivitysFragment extends Fragment implements View.OnClickListener 
             case R.id.recorder_video_activity :
                 Intent recorderVideoActivity = new Intent(getActivity(), RecorderVideoActivity.class);
                 getActivity().startActivity(recorderVideoActivity);
+                break;
+            case R.id.recorder_video_activity_one :
+                Intent recorderVideoOneActivity = new Intent(getActivity(), RecorderVideoActivityOne.class);
+                getActivity().startActivity(recorderVideoOneActivity);
                 break;
             case R.id.recorder_video_activity_two :
                 Intent recorderVideoTwoActivity = new Intent(getActivity(), RecorderVideoActivityTwo.class);

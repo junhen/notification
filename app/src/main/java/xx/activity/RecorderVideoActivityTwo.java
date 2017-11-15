@@ -19,35 +19,40 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
+import java.net.URLEncoder;
 import java.util.Calendar;
 
 import com.leui.notification.test.R;
+import com.lzy.okgo.OkGo;
+import com.lzy.okgo.callback.StringCallback;
 
+import okhttp3.Call;
+import okhttp3.Response;
 import xx.util.FileUtil;
+import xx.util.OkGoUtil;
 import xx.util.UploadUtil;
 
-public class RecorderVideoActivityTwo extends Activity
-        implements SurfaceHolder.Callback,
-        MediaRecorder.OnErrorListener,
-        MediaRecorder.OnInfoListener {
+import org.jetbrains.annotations.NotNull;
+
+public class RecorderVideoActivityTwo extends Activity implements SurfaceHolder.Callback,
+        MediaRecorder.OnErrorListener, MediaRecorder.OnInfoListener {
 
     private static final String TAG = "Recorder-TAG";
     //private static String actionUrl = "http://10.100.1.208/receive_file.php";
     private static String actionUrl = "https://www.baidu.com/";
 
-    private SurfaceView mSurfaceview;
+    private SurfaceView mSurfaceView;
     private SurfaceHolder mSurfaceHolder;
     private Button mBtnStartStop;
     private Button mBtnPlay;
@@ -59,12 +64,11 @@ public class RecorderVideoActivityTwo extends Activity
     private MediaPlayer mediaPlayer;
     private String path;
     private String date;
-    private ArrayList<String> paths = new ArrayList<>();
     private TextView textView;
     private int text = 0;
 
 
-    private Handler mUpHandler;
+    private Handler mUploadHandler;
     private UploadThread mUploadThread;
 
     private android.os.Handler handler = new android.os.Handler();
@@ -80,13 +84,12 @@ public class RecorderVideoActivityTwo extends Activity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate  "+ UploadUtil.BOUNDARY);
+        Log.d(TAG, "onCreate  " + UploadUtil.BOUNDARY);
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_recorder_video_two);
 
-        mSurfaceview = (SurfaceView) findViewById(R.id.surfaceview);
-        //mSurfaceview.setVisibility(View.GONE);
+        mSurfaceView = (SurfaceView) findViewById(R.id.surfaceview);
         mImageView = (ImageView) findViewById(R.id.imageview);
         mBtnStartStop = (Button) findViewById(R.id.btnStartStop);
         mBtnPlay = (Button) findViewById(R.id.btnPlayVideo);
@@ -105,7 +108,6 @@ public class RecorderVideoActivityTwo extends Activity
                 }
                 if (!mStartedFlg) {
                     mImageView.setVisibility(View.GONE);
-
                     try {
                         startRecodeVideo();
                         mStartedFlg = true;
@@ -114,7 +116,7 @@ public class RecorderVideoActivityTwo extends Activity
                         e.printStackTrace();
                     }
                 } else {
-                    //stop
+                    mImageView.setVisibility(View.VISIBLE);
                     if (mStartedFlg) {
                         try {
                             releaseRecodeVideo();
@@ -131,6 +133,10 @@ public class RecorderVideoActivityTwo extends Activity
         mBtnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (path == null) {
+                    Log.d(TAG, "mediaPlayer   path == null ");
+                    return;
+                }
                 mIsPlay = true;
                 mImageView.setVisibility(View.GONE);
                 if (mediaPlayer == null) {
@@ -141,6 +147,20 @@ public class RecorderVideoActivityTwo extends Activity
                 mediaPlayer = MediaPlayer.create(RecorderVideoActivityTwo.this, uri);
                 mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 mediaPlayer.setDisplay(mSurfaceHolder);
+                mediaPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                    @Override
+                    public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                        Log.d(TAG, "mediaPlayer   onInfo  what: " + what + ",  extra: " + extra);
+                        return false;
+                    }
+                });
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        Log.d(TAG, "mediaPlayer   onCompletion  mp: " + mp);
+                        mImageView.setVisibility(View.VISIBLE);
+                    }
+                });
                 try {
                     mediaPlayer.prepare();
                 } catch (Exception e) {
@@ -150,14 +170,17 @@ public class RecorderVideoActivityTwo extends Activity
             }
         });
 
-        SurfaceHolder holder = mSurfaceview.getHolder();
+        SurfaceHolder holder = mSurfaceView.getHolder();
         holder.addCallback(this);
         // setType必须设置，要不出错.
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
-        //启动一个上传视频的HandlerThread线程
+        //启动一个上传视频的 HandlerThread 线程
         mUploadThread = new UploadThread("上传video");
         mUploadThread.start();
+
+        //初始化OkGo
+        OkGoUtil.initOkGo(getApplication());
     }
 
     @Override
@@ -171,8 +194,8 @@ public class RecorderVideoActivityTwo extends Activity
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG, "onResume mUploadThread.isAlive(): "+mUploadThread.isAlive());
-        if(mUploadThread.isAlive()) mUploadThread.quit();
+        Log.d(TAG, "onResume mUploadThread.isAlive(): " + mUploadThread.isAlive());
+        if (mUploadThread.isAlive()) mUploadThread.quit();
         super.onDestroy();
     }
 
@@ -232,8 +255,10 @@ public class RecorderVideoActivityTwo extends Activity
 
     private void releaseRecodeVideo() {
         Log.d(TAG, "releaseRecodeVideo");
-        if(path != null)
+        if (path != null)
             sendRecorde();
+        //为了避免重复上传
+        path = null;
         handler.removeCallbacks(runnable);
         if (mRecorder != null) {
             mRecorder.setOnErrorListener(null);
@@ -259,14 +284,21 @@ public class RecorderVideoActivityTwo extends Activity
         int year = ca.get(Calendar.YEAR);           // 获取年份
         int month = ca.get(Calendar.MONTH);         // 获取月份
         int day = ca.get(Calendar.DATE);            // 获取日
+        int hour = ca.get(Calendar.HOUR_OF_DAY);    // 小时
         int minute = ca.get(Calendar.MINUTE);       // 分
-        int hour = ca.get(Calendar.HOUR);           // 小时
         int second = ca.get(Calendar.SECOND);       // 秒
 
-        String date = "" + year + (month + 1) + day + hour + minute + second;
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%04d", year))
+                .append(String.format("%02d", month + 1))
+                .append(String.format("%02d", day))
+                .append(String.format("%02d", hour))
+                .append(String.format("%02d", minute))
+                .append(String.format("%02d", second));
+        String date = sb.toString();
         Log.d(TAG, "getDate  date:" + date);
-
         return date;
+
     }
 
     /**
@@ -303,7 +335,7 @@ public class RecorderVideoActivityTwo extends Activity
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
         Log.d(TAG, "surfaceDestroyed");
-        mSurfaceview = null;
+        mSurfaceView = null;
         mSurfaceHolder = null;
 
         //在surfaceDestroyed中也需要释放一次camera资源
@@ -337,39 +369,50 @@ public class RecorderVideoActivityTwo extends Activity
      */
     public void sendRecorde() {
         Log.d(TAG, "sendRecorde");
-        final String lastPath = path;
-        path = null;
-        paths.add(path);
-        mUpHandler.post(new Runnable() {
+        final String filePath = path;
+        final String fileName = date + ".mp4";
+        mUploadHandler.post(new Runnable() {
             @Override
             public void run() {
                 /*String pathCP = getSDPath();
                 if (pathCP != null) {
                     File dir = new File(pathCP + "/recordtestcp");
-                    if (!dir.exists()) {
+                    if (!dir.exists())
                         dir.mkdir();
+                    pathCP = dir + "/" + fileName;
+                    Log.d(TAG, "sendRecorde   "
+                            + ",  filePath: " + filePath
+                            + ",  pathCP: " + pathCP
+                            + ",  threadid : " + Process.myTid());
+                    //copy文件到另一个目录下
+                    //FileUtil.copyFile(filePath, pathCP);
+                    //FileUtil.copyFile(filePath, pathCP, false);
+                    //FileUtil.copyFile(new File(filePath), new File(pathCP));
+                    try {
+                        //float time = FileUtil.forChannel(new File(filePath), new File(pathCP));
+                        //float time = FileUtil.forImage(new File(filePath), new File(pathCP));
+                        //float time = FileUtil.forTransfer(new File(filePath), new File(pathCP));
+                        float time = FileUtil.forJava(new File(filePath), new File(pathCP));
+                        Log.d(TAG, "sendRecorde   ent time: " + time / 1000);
+                    } catch (Exception e) {
+                        Log.d(TAG, "sendRecorde   Exception e: " + e);
+                        e.printStackTrace();
                     }
-                    pathCP = dir + "/" + date + ".mp4";
-                    Log.d(TAG, "onCreate   end path: " + path + ",  threadid : ");
-                    Log.d(TAG, "onCreate   end pathCP: " + pathCP + ",  threadid : " + Process.myTid());
-                    FileUtil.copyFile(path, pathCP);
                 } else {
-                    Log.d(TAG, "onCreate   end pathCP: " + pathCP);
+                    Log.d(TAG, "sendRecorde  pathCP: " + null);
                     return;
                 }*/
 
                 //这里是以后上传代码用，现在不要看这个方法
-                try {
-                    Thread.currentThread().sleep(12000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                uploadFile(actionUrl, lastPath);
+                //uploadFile(actionUrl, filePath, fileName);
+                uploadFile(actionUrl, filePath);
             }
         });
     }
 
-    //记录一个新视频
+    /**
+     * 记录一个新视频
+     */
     private void resetRecorder() {
         releaseRecodeVideo();
         try {
@@ -383,33 +426,106 @@ public class RecorderVideoActivityTwo extends Activity
         }
     }
 
-    //上传的线程，主要是通过handler的post，在此线程执行
-    class UploadThread extends HandlerThread {
-        public UploadThread(String name) {
-            super(name);
+    /**
+     * 上传录像文件到网络服务器，使用了OkGo框架
+     *
+     * @param uploadUrl 服务器的地址
+     * @param filePath  录像文件的本地地址
+     * @param fileName  录像文件名
+     */
+    private void uploadFile(String uploadUrl, @NotNull String filePath, String fileName) {
+        Log.d(TAG, "uploadFile uploadUrl: " + uploadUrl + ",  filePath: " + filePath + ",  fileName: " + fileName);
+
+        if (fileName == null) fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+
+        String header = "method=app_commit"
+                + "&mac=" + "123456789123456789"
+                + "&video=" + fileName;
+        try {
+            header = URLEncoder.encode(header, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        header = String.format("%06d", header.length()) + header;
+
+        try {
+            header = URLEncoder.encode(header, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
 
-        @Override
-        protected void onLooperPrepared() {
-            mUpHandler = new Handler(getLooper());
+
+        //从视频文件全路径filePath生成视频文件
+        File file = new File(filePath);
+        int fileLength = (int) file.length(); //文件长度
+        int fileNameLength = 4;
+
+        //定义一个字节数组
+        byte[] b = new byte[header.length() + fileNameLength + fileLength];
+        int pos = 0;
+
+        //将前面生成的长度和命令字符串放到字节数组中
+        System.arraycopy(header.getBytes(), 0, b, 0, header.length());
+        pos += header.length();
+
+        //将文件长度放到字节数组中
+        b[pos++] = (byte) ((fileLength & 0xff000000) >> 24);
+        b[pos++] = (byte) ((fileLength & 0x00ff0000) >> 16);
+        b[pos++] = (byte) ((fileLength & 0x0000ff00) >> 8);
+        b[pos++] = (byte) (fileLength & 0x000000ff);
+
+        //将文件内容放到字节数组中
+        InputStream in = null;
+        try {
+            if (file != null) {
+                in = new FileInputStream(file);
+                in.read(b, pos, fileLength); //从文件中读到字节数组中
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
+
+        //使用OkGo框架实现网络传输
+        OkGo.post(uploadUrl)
+                .upBytes(b)
+                .execute(new StringCallback() {
+                    //请求成功
+                    @Override
+                    public void onSuccess(String s, Call call, Response response) {
+                        Log.d(TAG, "上传成功： " + s.toString());
+                    }
+
+                    //请求失败
+                    @Override
+                    public void onError(Call call, Response response, Exception e) {
+                        Log.d(TAG, "上传失败");
+                    }
+                });
     }
 
-    /* 上传文件至Server，uploadUrl：接收文件的处理页面 */
-    private void uploadFile(String uploadUrl, String srcPath) {
-        Log.d(TAG, "uploadFile  uploadUrl: "+uploadUrl+",   srcPath: "+srcPath);
-        if(true) {
-            return;
-        }
-        String end = "\r\n";
-        String twoHyphens = "--";
-        String boundary = "******";
+    private void uploadFile(String uploadUrl, String filePath) {
+        //从视频文件完整路径中取出文件名
+        String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+        Log.d(TAG, "uploadFile uploadUrl: " + uploadUrl + ",  filePath: " + filePath + ",  fileName: " + fileName);
+
+        DataOutputStream dos = null;
+        InputStream fis = null;
+        InputStream fisTwo = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null;
         try {
             URL url = new URL(uploadUrl);
-            Log.d(TAG, "uploadFile  1111111111111111111");
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url
-                    .openConnection();
-            Log.d(TAG, "uploadFile  22222222222222");
+            Log.d(TAG, "uploadFile  1111111111111  url: "+url);
+            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+            Log.d(TAG, "uploadFile  2222222222222  httpURLConnection: "+httpURLConnection);
             // 设置每次传输的流大小，可以有效防止手机因为内存不足崩溃
             // 此方法用于在预先不知道内容长度时启用没有进行内部缓冲的 HTTP 请求正文的流。
             httpURLConnection.setChunkedStreamingMode(128 * 1024);// 128K
@@ -421,45 +537,120 @@ public class RecorderVideoActivityTwo extends Activity
             httpURLConnection.setRequestMethod("POST");
             httpURLConnection.setRequestProperty("Connection", "Keep-Alive");
             httpURLConnection.setRequestProperty("Charset", "UTF-8");
-            httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+            httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data;");
 
-            DataOutputStream dos = new DataOutputStream(httpURLConnection.getOutputStream());
-            dos.writeBytes(twoHyphens + boundary + end);
-            dos.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\"; filename=\""
-                    + srcPath.substring(srcPath.lastIndexOf("/") + 1) + "\""
-                    + end);
-            dos.writeBytes(end);
-            Log.d(TAG, "uploadFile  3333333333333  dos: "+dos);
-
-            FileInputStream fis = new FileInputStream(srcPath);
-            byte[] buffer = new byte[8192]; // 8k
-            int count = 0;
-            // 读取文件
-            while ((count = fis.read(buffer)) != -1)
+            //定义一个字节数组
+            byte[] b;
             {
-                dos.write(buffer, 0, count);
+                //文件数据流前需要加上公司需求的header数据
+                String header = "method=app_commit"
+                        + "&mac=" + "123456789123456789"
+                        + "&video=" + fileName;
+                try {
+                    header = URLEncoder.encode(header, "utf-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                header = String.format("%06d", header.length()) + header;
+
+                //从视频文件全路径filePath生成视频文件
+                File file = new File(filePath);
+                int fileLength = (int) file.length(); //文件长度
+                int fileNameLength = 4;
+
+                b = new byte[header.length() + fileNameLength + fileLength];
+                int pos = 0;
+
+                //将前面生成的长度和命令字符串放到字节数组中
+                System.arraycopy(header.getBytes(), 0, b, 0, header.length());
+                pos += header.length();
+
+                //将文件长度放到字节数组中
+                b[pos++] = (byte) ((fileLength & 0xff000000) >> 24);
+                b[pos++] = (byte) ((fileLength & 0x00ff0000) >> 16);
+                b[pos++] = (byte) ((fileLength & 0x0000ff00) >> 8);
+                b[pos++] = (byte) (fileLength & 0x000000ff);
+
+                // 读取文件
+                fis = new FileInputStream(filePath);
+                fis.read(b, pos, fileLength);
             }
-            fis.close();
+            Log.d(TAG, "uploadFile  3333333333333  b: " + (new String(b)));
 
-            dos.writeBytes(end);
-            dos.writeBytes(twoHyphens + boundary + twoHyphens + end);
-            Log.d(TAG, "uploadFile  44444444444  dos: "+dos);
+            //获取网络输出流，并把数据b写入其中
+            dos = new DataOutputStream(httpURLConnection.getOutputStream());
+            dos.write(b);
             dos.flush();
+            Log.d(TAG, "uploadFile  44444444444  dos: " + dos);
 
-            InputStream is = httpURLConnection.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is, "utf-8");
-            BufferedReader br = new BufferedReader(isr);
-            String result = br.readLine();
-
-            Log.d(TAG, "uploadFile  5555555555    result: "+result);
-            Toast.makeText(this, result, Toast.LENGTH_LONG).show();
-            dos.close();
-            is.close();
+            //接收网络反馈数据
+            /*fisTwo = httpURLConnection.getInputStream();
+            isr = new InputStreamReader(fisTwo, "utf-8");
+            br = new BufferedReader(isr);
+            String result = br.readLine();*/
+            //获取响应码 200=成功 当响应成功，获取响应的流
+            int res = httpURLConnection.getResponseCode();
+            String result = null;
+            Log.d(TAG, "uploadFile  5555555555    res: " + res);
+            if (res == 200) {
+                InputStream input = httpURLConnection.getInputStream();
+                StringBuffer sb1 = new StringBuffer();
+                int ss;
+                while ((ss = input.read()) != -1) {
+                    sb1.append((char) ss);
+                }
+                input.close();
+                result = sb1.toString();
+            }
+            Log.d(TAG, "uploadFile  5555555555    result: " + result);
 
         } catch (Exception e) {
-            Log.d(TAG, "uploadFile Exception e: "+e);
+            Log.d(TAG, "uploadFile 66666  Exception e: " + e);
             e.printStackTrace();
-            setTitle(e.getMessage());
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (dos != null) {
+                try {
+                    dos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fisTwo != null) {
+                try {
+                    fisTwo.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
+
+    /**
+     * 上传的线程，主要是通过handler的post，在此线程执行
+     */
+    class UploadThread extends HandlerThread {
+        public UploadThread(String name) {
+            super(name);
+        }
+
+        @Override
+        protected void onLooperPrepared() {
+            mUploadHandler = new Handler(getLooper());
+        }
+    }
+
 }

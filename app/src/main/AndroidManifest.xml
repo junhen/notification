@@ -238,9 +238,10 @@
         <activity
             android:name="xx.activity.RecorderVideoActivity"
             android:label="RecorderVideoActivity" />
-        <activity android:name="xx.activity.RecorderVideoActivityTwo">
-
-        </activity>
+        <activity
+            android:name="xx.activity.RecorderVideoActivityOne" />
+        <activity
+            android:name="xx.activity.RecorderVideoActivityTwo" />
     </application>
 
 </manifest>

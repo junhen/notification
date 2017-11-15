@@ -152,6 +152,14 @@
             android:text="recorder_video_activity" />
 
         <Button
+            android:id="@+id/recorder_video_activity_one"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="10dip"
+            android:text="recorder_video_activity_one" />
+
+        <Button
             android:id="@+id/recorder_video_activity_two"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

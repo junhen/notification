@@ -22,8 +22,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -479,23 +484,23 @@ public class FileUtil {
 
     //二进制文件方法
     public static void copyFile(String src, String dest) {
-
         //1.提供读入和写入的文件
         File f1 = new File(src);
         File f2 = new File(dest);
         //2.提供相应的流对象
-        FileInputStream fis = null;
-        FileOutputStream fos = null;
+        InputStream fis = null;
+        OutputStream fos = null;
         try {
             fis = new FileInputStream(f1);
             fos = new FileOutputStream(f2);
             //3.实现复制
-            byte[] b = new byte[200];
+            byte[] b = new byte[1024];
             int len;
             while ((len = fis.read(b)) != -1) {
                 fos.write(b, 0, len);
             }
-            fos.write("\r\n".getBytes());
+            fos.flush();
+            //fos.write("\r\n".getBytes());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -503,6 +508,92 @@ public class FileUtil {
                 try {
                     //关闭输入流
                     fis.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            if (fos != null) {
+                try {
+                    //关闭输出流
+                    fos.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    //抄袭1
+
+    public static boolean copyFile(File srcFile, File destFile) {
+        boolean result = false;
+        try {
+            InputStream in = new FileInputStream(srcFile);
+            try {
+                result = copyToFile(in, destFile);
+            } finally  {
+                in.close();
+            }
+        } catch (IOException e) {
+            result = false;
+        }
+        return result;
+    }
+
+    /**
+     * Copy data from a source stream to destFile.
+     * Return true if succeed, return false if failed.
+     */
+    public static boolean copyToFile(InputStream inputStream, File destFile) {
+        try {
+            if (destFile.exists()) {
+                destFile.delete();
+            }
+            FileOutputStream out = new FileOutputStream(destFile);
+            try {
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) >= 0) {
+                    out.write(buffer, 0, bytesRead);
+                }
+            } finally {
+                out.flush();
+                try {
+                    out.getFD().sync();
+                } catch (IOException e) {
+                }
+                out.close();
+            }
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    public static void copyFile(String src, String dest, boolean bool) {
+
+        //1.提供读入和写入的文件
+        File f1 = new File(src);
+        File f2 = new File(dest);
+
+        byte[] b = new byte[(int)f1.length()];
+        //将文件内容放到字节数组中
+        InputStream in1 = null;
+        OutputStream fos = null;
+        try {
+            in1 = new FileInputStream(f1);
+            in1.read(b, 0, (int)f1.length());            //从文件中读到字节数组中
+            fos = new FileOutputStream(f2);
+            fos.write(b, 0, (int)f1.length());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (in1 != null) {
+                try {
+                    //关闭输入流
+                    in1.close();
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -589,6 +680,136 @@ public class FileUtil {
             }
         }
         return fileData;
+    }
+
+    /**
+     * 四种copy文件的方式
+     *
+     * 方法1:古老的方式
+     * @param f1
+     * @param f2
+     * @return
+     * @throws Exception
+     */
+    public static long forJava(File f1,File f2) throws Exception{
+        long time=new Date().getTime();
+        int length=2097152;
+        FileInputStream in=new FileInputStream(f1);
+        FileOutputStream out=new FileOutputStream(f2);
+        byte[] buffer=new byte[length];
+        while(true){
+            int ins=in.read(buffer);
+            if(ins==-1){
+                in.close();
+                out.flush();
+                out.close();
+                return new Date().getTime()-time;
+            }else
+                out.write(buffer,0,ins);
+        }
+    }
+
+    /**
+     * 方法2:使用NIO中的管道到管道传输
+     * @param f1
+     * @param f2
+     * @return
+     * @throws Exception
+     */
+    public static long forTransfer(File f1,File f2) throws Exception{
+        long time=new Date().getTime();
+        int length=2097152;
+        FileInputStream in=new FileInputStream(f1);
+        FileOutputStream out=new FileOutputStream(f2);
+        FileChannel inC=in.getChannel();
+        FileChannel outC=out.getChannel();
+        int i=0;
+        while(true){
+            if(inC.position()==inC.size()){
+                inC.close();
+                outC.close();
+                return new Date().getTime()-time;
+            }
+            if((inC.size()-inC.position())<20971520)
+                length=(int)(inC.size()-inC.position());
+            else
+                length=20971520;
+            inC.transferTo(inC.position(),length,outC);
+            inC.position(inC.position()+length);
+            i++;
+        }
+    }
+
+    /**
+     * 方法3:内存文件景象写(读文件没有使用文件景象,有兴趣的可以回去试试,,我就不试了,估计会更快)
+     * @param f1
+     * @param f2
+     * @return
+     * @throws Exception
+     */
+    public static long forImage(File f1,File f2) throws Exception{
+        long time=new Date().getTime();
+        int length=2097152;
+        FileInputStream in=new FileInputStream(f1);
+        RandomAccessFile out=new RandomAccessFile(f2,"rw");
+        FileChannel inC=in.getChannel();
+        MappedByteBuffer outC=null;
+        MappedByteBuffer inbuffer=null;
+        byte[] b=new byte[length];
+        while(true){
+            if(inC.position()==inC.size()){
+                inC.close();
+                outC.force();
+                out.close();
+                return new Date().getTime()-time;
+            }
+            if((inC.size()-inC.position())<length){
+                length=(int)(inC.size()-inC.position());
+            }else{
+                length=20971520;
+            }
+            b=new byte[length];
+            inbuffer=inC.map(FileChannel.MapMode.READ_ONLY,inC.position(),length);
+            inbuffer.load();
+            inbuffer.get(b);
+            outC=out.getChannel().map(FileChannel.MapMode.READ_WRITE,inC.position(),length);
+            inC.position(b.length+inC.position());
+            outC.put(b);
+            outC.force();
+        }
+    }
+
+    /**
+     * 方法4:管道对管道
+     * @param f1
+     * @param f2
+     * @return
+     * @throws Exception
+     */
+    public static long forChannel(File f1,File f2) throws Exception{
+        long time=new Date().getTime();
+        int length=2097152;
+        FileInputStream in=new FileInputStream(f1);
+        FileOutputStream out=new FileOutputStream(f2);
+        FileChannel inC=in.getChannel();
+        FileChannel outC=out.getChannel();
+        ByteBuffer b=null;
+        while(true){
+            if(inC.position()==inC.size()){
+                inC.close();
+                outC.close();
+                return new Date().getTime()-time;
+            }
+            if((inC.size()-inC.position())<length){
+                length=(int)(inC.size()-inC.position());
+            }else
+                length=2097152;
+            b=ByteBuffer.allocateDirect(length);
+            inC.read(b);
+            b.flip();
+            outC.write(b);
+            outC.force(false);
+        }
     }
 
 }
