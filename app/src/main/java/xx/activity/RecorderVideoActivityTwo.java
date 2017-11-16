@@ -1,16 +1,19 @@
 package xx.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -51,6 +54,8 @@ public class RecorderVideoActivityTwo extends Activity implements SurfaceHolder.
     private static final String TAG = "Recorder-TAG";
     //private static String actionUrl = "http://10.100.1.208/receive_file.php";
     private static String actionUrl = "https://www.baidu.com/";
+    //上传video路径
+    private String videoUrl = "http://59.49.99.195:34562/videoplatform/communication/mainserver?";
 
     private SurfaceView mSurfaceView;
     private SurfaceHolder mSurfaceHolder;
@@ -255,10 +260,6 @@ public class RecorderVideoActivityTwo extends Activity implements SurfaceHolder.
 
     private void releaseRecodeVideo() {
         Log.d(TAG, "releaseRecodeVideo");
-        if (path != null)
-            sendRecorde();
-        //为了避免重复上传
-        path = null;
         handler.removeCallbacks(runnable);
         if (mRecorder != null) {
             mRecorder.setOnErrorListener(null);
@@ -271,6 +272,11 @@ public class RecorderVideoActivityTwo extends Activity implements SurfaceHolder.
         if (camera != null) {
             camera.release();
             camera = null;
+        }
+        if (path != null) {
+            sendRecorde();
+            //为了避免重复上传
+            path = null;
         }
     }
 
@@ -371,10 +377,17 @@ public class RecorderVideoActivityTwo extends Activity implements SurfaceHolder.
         Log.d(TAG, "sendRecorde");
         final String filePath = path;
         final String fileName = date + ".mp4";
+
+        /*AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+            @Override
+            public void run() {
+                uploadFileWithOkGo(videoUrl, filePath);
+            }
+        });*/
         mUploadHandler.post(new Runnable() {
             @Override
             public void run() {
-                /*String pathCP = getSDPath();
+                String pathCP = getSDPath();
                 if (pathCP != null) {
                     File dir = new File(pathCP + "/recordtestcp");
                     if (!dir.exists())
@@ -401,11 +414,11 @@ public class RecorderVideoActivityTwo extends Activity implements SurfaceHolder.
                 } else {
                     Log.d(TAG, "sendRecorde  pathCP: " + null);
                     return;
-                }*/
+                }
 
                 //这里是以后上传代码用，现在不要看这个方法
                 //uploadFile(actionUrl, filePath, fileName);
-                uploadFile(actionUrl, filePath);
+                //uploadFile(actionUrl, filePath);
             }
         });
     }
@@ -431,29 +444,24 @@ public class RecorderVideoActivityTwo extends Activity implements SurfaceHolder.
      *
      * @param uploadUrl 服务器的地址
      * @param filePath  录像文件的本地地址
-     * @param fileName  录像文件名
      */
-    private void uploadFile(String uploadUrl, @NotNull String filePath, String fileName) {
-        Log.d(TAG, "uploadFile uploadUrl: " + uploadUrl + ",  filePath: " + filePath + ",  fileName: " + fileName);
+    private void uploadFileWithOkGo(String uploadUrl, @NotNull String filePath) {
+        Log.d(TAG, "uploadFileWithOkGo uploadUrl: " + uploadUrl + ",  filePath: " + filePath);
+        String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
 
-        if (fileName == null) fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
-
-        String header = "method=app_commit"
-                + "&mac=" + "123456789123456789"
-                + "&video=" + fileName;
+        String header = "?method=app_commit"+ "&mac=" + getIMEI(RecorderVideoActivityTwo.this)+ "&video=" + fileName;
         try {
             header = URLEncoder.encode(header, "utf-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
         header = String.format("%06d", header.length()) + header;
-
+        Log.d(TAG, "uploadFileWithOkGo header: " + header);
         try {
             header = URLEncoder.encode(header, "utf-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-
 
         //从视频文件全路径filePath生成视频文件
         File file = new File(filePath);
@@ -464,7 +472,7 @@ public class RecorderVideoActivityTwo extends Activity implements SurfaceHolder.
         byte[] b = new byte[header.length() + fileNameLength + fileLength];
         int pos = 0;
 
-        //将前面生成的长度和命令字符串放到字节数组中
+        //将header放到字节数组中
         System.arraycopy(header.getBytes(), 0, b, 0, header.length());
         pos += header.length();
 
@@ -500,7 +508,9 @@ public class RecorderVideoActivityTwo extends Activity implements SurfaceHolder.
                     //请求成功
                     @Override
                     public void onSuccess(String s, Call call, Response response) {
-                        Log.d(TAG, "上传成功： " + s.toString());
+                        Log.d(TAG, "onSuccess,  s: " + s.toString()+", response: "+response);
+
+
                     }
 
                     //请求失败
@@ -514,7 +524,9 @@ public class RecorderVideoActivityTwo extends Activity implements SurfaceHolder.
     private void uploadFile(String uploadUrl, String filePath) {
         //从视频文件完整路径中取出文件名
         String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
-        Log.d(TAG, "uploadFile uploadUrl: " + uploadUrl + ",  filePath: " + filePath + ",  fileName: " + fileName);
+        Log.d(TAG, "uploadFile uploadUrl: " + uploadUrl + ",  filePath: "
+                + filePath + ",  fileName: " + fileName
+                + ",  threadid : " + Process.myTid());
 
         DataOutputStream dos = null;
         InputStream fis = null;
@@ -637,6 +649,16 @@ public class RecorderVideoActivityTwo extends Activity implements SurfaceHolder.
                 }
             }
         }
+    }
+
+    /**
+     * 获取手机IMEI号
+     */
+    public String getIMEI(Context context) {
+        TelephonyManager telephonyManager = (TelephonyManager)
+                context.getSystemService(context.TELEPHONY_SERVICE);
+        String imei = telephonyManager.getDeviceId();
+        return imei;
     }
 
     /**

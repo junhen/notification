@@ -693,7 +693,7 @@ public class FileUtil {
      */
     public static long forJava(File f1,File f2) throws Exception{
         long time=new Date().getTime();
-        int length=2097152;
+        int length=1021;
         FileInputStream in=new FileInputStream(f1);
         FileOutputStream out=new FileOutputStream(f2);
         byte[] buffer=new byte[length];

@@ -1,94 +1,80 @@
 package xx.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.hardware.Camera;
-import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Process;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Calendar;
 
 import com.leui.notification.test.R;
-import com.lzy.okgo.OkGo;
-import com.lzy.okgo.callback.StringCallback;
-
-import okhttp3.Call;
-import okhttp3.Response;
-import xx.util.OkGoUtil;
-import xx.util.UploadUtil;
 
 public class RecorderVideoActivityOne extends Activity implements SurfaceHolder.Callback,
         MediaRecorder.OnErrorListener, MediaRecorder.OnInfoListener {
 
     private static final String TAG = "Recorder-TAG";
     private static String actionUrl = "https://www.baidu.com/"; //这里指定你们公司的url
+    //上传video路径
+    private String videoUrl = "http://59.49.99.195:34562/videoplatform/communication/mainserver?";
 
     private SurfaceView mSurfaceview;
     private SurfaceHolder mSurfaceHolder;
     private Button mBtnStartStop;
-    private boolean mStartedFlg;//是否正在播放录像
+    private boolean mStartedFlg; //是否开始录像
     private MediaRecorder mRecorder;
     private ImageView mImageView;
     private Camera camera;
     private String path;
-    private String date;
-    private TextView textView;
-    private int text = 0;
-
-
-    private Handler mUploadHandler;
-    private UploadThread mUploadThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate  " + UploadUtil.BOUNDARY);
+        Log.d(TAG, "onCreate  ");
         super.onCreate(savedInstanceState);
         //requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.activity_recorder_video_two);
+        setContentView(R.layout.activity_recorder_video_one);
 
         mSurfaceview = (SurfaceView) findViewById(R.id.surfaceview);
         mImageView = (ImageView) findViewById(R.id.imageview);
         mBtnStartStop = (Button) findViewById(R.id.btnStartStop);
-        textView = (TextView) findViewById(R.id.text);
         mBtnStartStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (!mStartedFlg) {
                     mImageView.setVisibility(View.GONE);
-                    try {
-                        mStartedFlg = true;
-                        startRecodeVideo();
-                        mBtnStartStop.setText("Stop");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    mStartedFlg = true;
+                    startRecordVideo();
+                    mBtnStartStop.setText("Stop");
                 } else {
-                    try {
-                        mStartedFlg = false;
-                        releaseRecodeVideo();
-                        mBtnStartStop.setText("Start");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    mStartedFlg = false;
+                    stopRecordVideo();
+                    mBtnStartStop.setText("Start");
                 }
             }
         });
@@ -97,13 +83,6 @@ public class RecorderVideoActivityOne extends Activity implements SurfaceHolder.
         holder.addCallback(this);
         //setType必须设置，要不出错.
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-
-        //启动一个上传视频的HandlerThread线程
-        mUploadThread = new UploadThread("上传video");
-        mUploadThread.start();
-
-        //初始化OkGo
-        OkGoUtil.initOkGo(getApplication());
     }
 
     @Override
@@ -115,18 +94,20 @@ public class RecorderVideoActivityOne extends Activity implements SurfaceHolder.
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        Log.d(TAG, "onResume mUploadThread.isAlive(): " + mUploadThread.isAlive());
-        if (mUploadThread.isAlive()) mUploadThread.quit();
-        super.onDestroy();
-    }
-
     /**
      * 初始化MediaRecorder和Camera对象，并设置MediaRecorder的参数
      */
-    private void startRecodeVideo() throws IOException {
-        Log.d(TAG, "startRecodeVideo");
+    private void startRecordVideo() {
+        Log.d(TAG, "startRecordVideo");
+
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "uploadFileInSubThread in" + ",  threadId : " + Process.myTid());
+                uploadIme(videoUrl, "app_login");
+            }
+        });
+
         if (mRecorder == null) {
             mRecorder = new MediaRecorder();
         }
@@ -162,25 +143,25 @@ public class RecorderVideoActivityOne extends Activity implements SurfaceHolder.
         path = getSDPath();
         if (path != null) {
             File dir = new File(path + "/recordtest");
-            if (!dir.exists()) {
+            if (!dir.exists())
                 dir.mkdir();
-            }
-            date = getDate();
-            path = dir + "/" + date + ".mp4";
-            Log.d(TAG, "startRecodeVideo path: " + path);
+            path = dir + "/" + getDate() + ".mp4";
+            Log.d(TAG, "startRecordVideo path: " + path);
         } else {
-            Log.d(TAG, "startRecodeVideo path: " + path);
             return;
         }
         mRecorder.setOutputFile(path);
-        mRecorder.prepare();
+        try {
+            mRecorder.prepare();
+        } catch (IOException e) {
+            Log.d(TAG, "startRecordVideo IOException e" + e.getMessage());
+            e.printStackTrace();
+        }
         mRecorder.start();
     }
 
-    private void releaseRecodeVideo() {
-        Log.d(TAG, "releaseRecodeVideo");
-        if (path != null)
-            sendRecorde();
+    private void stopRecordVideo() {
+        Log.d(TAG, "stopRecordVideo");
         if (mRecorder != null) {
             mRecorder.setOnErrorListener(null);
             mRecorder.setOnInfoListener(null);
@@ -192,6 +173,10 @@ public class RecorderVideoActivityOne extends Activity implements SurfaceHolder.
         if (camera != null) {
             camera.release();
             camera = null;
+        }
+        if (path != null) {
+            uploadFileInSubThread(path);
+            path = null;
         }
     }
 
@@ -254,13 +239,7 @@ public class RecorderVideoActivityOne extends Activity implements SurfaceHolder.
         mSurfaceview = null;
         mSurfaceHolder = null;
         //在surfaceDestroyed中也需要释放一次camera资源
-        releaseRecodeVideo();
-    }
-
-    @Override
-    public void onError(MediaRecorder mr, int what, int extra) {
-        Log.d(TAG, "onError   mr: " + mr + ",  what: " + mr + ",  extra: " + extra);
-
+        stopRecordVideo();
     }
 
     @Override
@@ -271,21 +250,23 @@ public class RecorderVideoActivityOne extends Activity implements SurfaceHolder.
             //记录一个新视频
             resetRecorder();
         }
+    }
 
+    @Override
+    public void onError(MediaRecorder mr, int what, int extra) {
+        Log.d(TAG, "onError   mr: " + mr + ",  what: " + mr + ",  extra: " + extra);
     }
 
     /**
      * 使用子线程上传记录好的视频
      */
-    public void sendRecorde() {
-        Log.d(TAG, "sendRecorde");
-        final String filePath = path;
-        final String fileName = date + ".mp4";
-        mUploadHandler.post(new Runnable() {
+    public void uploadFileInSubThread(final String filePath) {
+        Log.d(TAG, "uploadFileInSubThread out" + ",  threadId : " + Process.myTid());
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
             @Override
             public void run() {
-                //调用上传录像文件的方法
-                uploadFile(actionUrl, filePath, fileName);
+                Log.d(TAG, "uploadFileInSubThread in" + ",  threadId : " + Process.myTid());
+                uploadFile(videoUrl, filePath);
             }
         });
     }
@@ -294,14 +275,11 @@ public class RecorderVideoActivityOne extends Activity implements SurfaceHolder.
      * 记录一个新视频
      */
     private void resetRecorder() {
-        releaseRecodeVideo();
+        stopRecordVideo();
         try {
-            startRecodeVideo();
+            startRecordVideo();
         } catch (IllegalStateException e) {
             Log.d(TAG, "resetRecorder IllegalStateException e:" + e.getMessage());
-            e.printStackTrace();
-        } catch (IOException e) {
-            Log.d(TAG, "resetRecorder IOException e" + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -311,75 +289,187 @@ public class RecorderVideoActivityOne extends Activity implements SurfaceHolder.
      *
      * @param uploadUrl 服务器的地址
      * @param filePath  录像文件的本地地址
-     * @param fileName  录像文件名
      */
-    private void uploadFile(String uploadUrl, String filePath, String fileName) {
-        Log.d(TAG, "uploadFile uploadUrl: " + uploadUrl + ",  filePath: " + filePath + ",  fileName: " + fileName);
-        String txt = "method=d_qrcodecommit&d_account=" + "mDriver.getD_account()" +
-                "&safecode=" + "mDriver.getSafecode()" +
-                "&company=" + "mDriver.getCompany()";
-        txt += "&photo=" + fileName;
-        File file = new File(filePath);
+    private void uploadFile(String uploadUrl, String filePath) {
+        //从视频文件完整路径中取出文件名
+        String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+        Log.d(TAG, "uploadFile uploadUrl: " + uploadUrl + ",  filePath: " + filePath + ",  fileName: " + fileName
+                + ",  threadId : " + Process.myTid());
+        OutputStream dos = null;
+        InputStream fis = null;
+        InputStream fisTwo = null;
+        BufferedReader br = null;
         try {
-            txt = URLEncoder.encode(txt, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        String str = String.format("%06d", txt.length());
-        txt = str + txt;
+            //定义一个字节数组
+            byte[] b;
+            {
+                //文件数据流前需要加上公司需求的header数据
+                String header = "method=app_commit" + "&mac=" + getIMEI(RecorderVideoActivityOne.this) + "&video=" + fileName;
+                try {
+                    header = URLEncoder.encode(header, "utf-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                header = String.format("%06d", header.length()) + header;
 
-        int len = (int) file.length(); //文件长度
-        int fileNameLen = 4;
-        //将前面生成的长度和命令字符串放到字节数组中
-        int pos = 0;
-        byte[] b = new byte[txt.length() + fileNameLen + len];
-        System.arraycopy(txt.getBytes(), 0, b, 0, txt.length());
-        //将文件长度放到字节数组中
-        Log.d(TAG, "uploadFile txt: " + txt);
-        pos += txt.length();
-        b[pos++] = (byte) ((len & 0xff000000) >> 24);
-        b[pos++] = (byte) ((len & 0x00ff0000) >> 16);
-        b[pos++] = (byte) ((len & 0x0000ff00) >> 8);
-        b[pos++] = (byte) (len & 0x000000ff);
-        //将文件内容放到字节数组中
-        try {
-            if (file != null) {
-                InputStream in1 = new FileInputStream(file);
-                in1.read(b, pos, len);            //从文件中读到字节数组中
+                //从视频文件全路径filePath生成视频文件
+                File file = new File(filePath);
+                int fileLength = (int) file.length(); //文件长度
+                int fileNameLength = 4;
+
+                b = new byte[header.length() + fileNameLength + fileLength];
+                int pos = 0;
+
+                //将前面生成的长度和命令字符串放到字节数组中
+                System.arraycopy(header.getBytes(), 0, b, 0, header.length());
+                pos += header.length();
+
+                //将文件长度放到字节数组中
+                b[pos++] = (byte) ((fileLength & 0xff000000) >> 24);
+                b[pos++] = (byte) ((fileLength & 0x00ff0000) >> 16);
+                b[pos++] = (byte) ((fileLength & 0x0000ff00) >> 8);
+                b[pos++] = (byte) (fileLength & 0x000000ff);
+                //Log.d(TAG, "uploadFile  3333333333333  b: " + (new String(b)));
+
+                // 读取文件
+                fis = new FileInputStream(filePath);
+                //3.实现复制
+                byte[] temp = new byte[1024];
+                int len;
+                while ((len = fis.read(temp)) != -1) {
+                    System.arraycopy(temp, 0, b, pos, len);
+                    pos += len;
+                }
+                //fis.read(b, pos, fileLength);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        OkGo.post(uploadUrl)
-                .upBytes(b)
-                .execute(new StringCallback() {
-                    //请求成功
-                    @Override
-                    public void onSuccess(String s, Call call, Response response) {
-                        Log.d(TAG, "上传成功： " + s.toString());
-                    }
 
-                    //请求失败
-                    @Override
-                    public void onError(Call call, Response response, Exception e) {
-                        Log.d(TAG, "上传失败");
-                        super.onError(call, response, e);
-                    }
-                });
+            URL url = new URL(uploadUrl);
+            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+            Log.d(TAG, "uploadFile,  " + ",  url: " + url + "httpURLConnection: " + httpURLConnection);
+            //设置连接超时为5秒
+            httpURLConnection.setConnectTimeout(5000);
+            httpURLConnection.setReadTimeout(5000);
+            // 使用POST方法
+            httpURLConnection.setRequestMethod("POST");
+            // 设置每次传输的流大小，可以有效防止手机因为内存不足崩溃
+            // 此方法用于在预先不知道内容长度时启用没有进行内部缓冲的 HTTP 请求正文的流。
+            //httpURLConnection.setChunkedStreamingMode(128 * 1024);// 128K
+            // 允许输入输出流
+            httpURLConnection.setDoInput(true);
+            httpURLConnection.setDoOutput(true);
+            httpURLConnection.setUseCaches(false);
+            //httpURLConnection.setRequestProperty("Connection", "Keep-Alive");
+            //httpURLConnection.setRequestProperty("Charset", "UTF-8");
+            //httpURLConnection.setRequestProperty("Content-Type", "multipart/form-data;");
+
+            //获取网络输出流，并把数据b写入其中
+            dos = httpURLConnection.getOutputStream();
+            dos.write(b);
+            dos.flush();
+            Log.d(TAG, "uploadFile  44444444444  dos: " + dos);
+
+            //获取响应码 200=成功 当响应成功，获取响应的流
+            final int res = httpURLConnection.getResponseCode();
+            Log.d(TAG, "uploadFile  5555555555    res: " + res);
+            InputStream input = httpURLConnection.getInputStream();
+            Log.d(TAG, "uploadFile  5555555555    input: " + input);
+            StringBuffer sb1 = new StringBuffer();
+            sb1.append("start: ");
+            int ss;
+            while ((ss = input.read()) != -1) {
+                sb1.append((char) ss);
+            }
+            input.close();
+            String result = sb1.toString();
+            Log.d(TAG, "uploadFile  5555555555    result: " + result);
+
+        } catch (Exception e) {
+            Log.d(TAG, "uploadFile 66666  Exception e: " + e);
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (dos != null) {
+                try {
+                    dos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fisTwo != null) {
+                try {
+                    fisTwo.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     /**
-     * 上传的线程，主要是通过handler的post，在此线程执行
+     * 上传手机ime号到网络服务器
+     * 使用 Get 方式
+     *
+     * @param uploadUrl  服务器的地址
+     * @param methodName methodName
      */
-    class UploadThread extends HandlerThread {
-        public UploadThread(String name) {
-            super(name);
-        }
-
-        @Override
-        protected void onLooperPrepared() {
-            mUploadHandler = new Handler(getLooper());
+    private void uploadIme(String uploadUrl, String methodName) {
+        Log.d(TAG, "uploadFile uploadUrl: " + uploadUrl + ",  methodName: " + methodName + ",  threadId : " + Process.myTid());
+        try {
+            //创建URL对象
+            //Get请求可以在Url中带参数： ①url + "?bookname=" + name;②url="http://www.baidu.com?name=zhang&pwd=123";
+            URL url = new URL(uploadUrl + "method=" + methodName
+                    + "&mac=" + getIMEI(RecorderVideoActivityOne.this));
+            //返回一个URLConnection对象，它表示到URL所引用的远程对象的连接
+            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+            //在这里设置一些属性，详细见UrlConnection文档，HttpURLConnection是UrlConnection的子类
+            //设置连接超时为5秒
+            httpURLConnection.setConnectTimeout(5000);
+            //设定请求方式(默认为get)
+            httpURLConnection.setRequestMethod("GET");
+            //建立到远程对象的实际连接
+            httpURLConnection.connect();
+            //返回打开连接读取的输入流，输入流转化为StringBuffer类型，这一套流程要记住，常用
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+            String line = null;
+            StringBuffer stringBuffer = new StringBuffer();
+            while ((line = bufferedReader.readLine()) != null) {
+                //转化为UTF-8的编码格式
+                line = new String(line.getBytes("UTF-8"));
+                stringBuffer.append(line);
+            }
+            Log.e(TAG, "Get请求返回的数据: " + stringBuffer.toString());
+            bufferedReader.close();
+            httpURLConnection.disconnect();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
+
+    /**
+     * 获取手机IMEI号
+     */
+    public String getIMEI(Context context) {
+        TelephonyManager telephonyManager = (TelephonyManager)
+                context.getSystemService(context.TELEPHONY_SERVICE);
+        String imei = telephonyManager.getDeviceId();
+        return imei;
+    }
+
+    private Handler mHandler = new Handler();
 }
 

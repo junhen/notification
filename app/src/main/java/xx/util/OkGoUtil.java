@@ -42,8 +42,8 @@ public class OkGoUtil {
      *
      * @param application
      */
-    public static void initOkGo(Application application){
-        if(mApplication != null) {
+    public static void initOkGo(Application application) {
+        if (mApplication != null) {
             Log.d(TAG, "initOkGo has been exected");
             return;
         }
@@ -89,26 +89,27 @@ public class OkGoUtil {
                     .setCookieStore(new PersistentCookieStore())        //cookie持久化存储，如果cookie不过期，则一直有效
 
                     //可以设置https的证书,以下几种方案根据需要自己设置
-                    .setCertificates()                                  //方法一：信任所有证书,不安全有风险
-                    //      .setCertificates(new SafeTrustManager())            //方法二：自定义信任规则，校验服务端证书
-                    //      .setCertificates(getAssets().open("srca.cer"))      //方法三：使用预埋证书，校验服务端证书（自签名证书）
-                    //              //方法四：使用bks证书和密码管理客户端证书（双向认证），使用预埋证书，校验服务端证书（自签名证书）
-                    //      .setCertificates(getAssets().open("xxx.bks"), "123456", getAssets().open("yyy.cer"))//
+            //       .setCertificates()                                  //方法一：信任所有证书,不安全有风险
+            //      .setCertificates(new SafeTrustManager())            //方法二：自定义信任规则，校验服务端证书
+            //      .setCertificates(getAssets().open("srca.cer"))      //方法三：使用预埋证书，校验服务端证书（自签名证书）
+            //              //方法四：使用bks证书和密码管理客户端证书（双向认证），使用预埋证书，校验服务端证书（自签名证书）
+            //      .setCertificates(getAssets().open("xxx.bks"), "123456", getAssets().open("yyy.cer"))//
 
-                    //配置https的域名匹配规则，详细看demo的初始化介绍，不需要就不要加入，使用不当会导致https握手失败
-                    //      .setHostnameVerifier(new SafeHostnameVerifier())
+            //配置https的域名匹配规则，详细看demo的初始化介绍，不需要就不要加入，使用不当会导致https握手失败
+            //      .setHostnameVerifier(new SafeHostnameVerifier())
 
-                    //可以添加全局拦截器，不需要就不要加入，错误写法直接导致任何回调不执行
-                    //      .addInterceptor(new Interceptor() {
-                    //            @Override
-                    //            public Response intercept(Chain chain) throws IOException {
-                    //                 return chain.proceed(chain.request());
-                    //            }
-                    //       })
+            //可以添加全局拦截器，不需要就不要加入，错误写法直接导致任何回调不执行
+            //      .addInterceptor(new Interceptor() {
+            //            @Override
+            //            public Response intercept(Chain chain) throws IOException {
+            //                 return chain.proceed(chain.request());
+            //            }
+            //       })
 
-                    //这两行同上，不需要就不要加入
-                    .addCommonHeaders(headers)  //设置全局公共头
-                    .addCommonParams(params);   //设置全局公共参数
+            //这两行同上，不需要就不要加入
+            // .addCommonHeaders(headers)  //设置全局公共头
+            // .addCommonParams(params);   //设置全局公共参数
+            ;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -117,9 +118,10 @@ public class OkGoUtil {
 
     /**
      * get请求获取数据
+     *
      * @param url
      */
-    private void getByOkGo(String url){
+    private void getByOkGo(String url) {
         OkGo.get(url)                            // 请求方式和请求url
                 .tag(this)                       // 请求的 tag, 主要用于取消对应的请求
                 .cacheKey("cacheKey")            // 设置当前请求的缓存key,建议每个不同功能的请求设置一个
@@ -136,9 +138,10 @@ public class OkGoUtil {
      * post请求获取数据，其中params方法用来添加请求参数，params添加参数的时候,
      * 最后一个isReplace为可选参数,默认为true,即代表相同key的时候,后添加的会覆盖先前添加的；
      * post请求
+     *
      * @param url
      */
-    private void postByOkGo(String url){
+    private void postByOkGo(String url) {
         OkGo.post(url)
                 .tag(this)
                 .cacheKey("cachePostKey")
@@ -170,13 +173,14 @@ public class OkGoUtil {
      * 如果有,则按照该响应头中指定的文件名命名文件,如FileName.txt
      * 如果上述响应头不存在,则检查下载的文件url,例如:http://image.baidu.com/abc.jpg,那么将会自动以abc.jpg命名文件
      * 如果url也把文件名解析不出来,那么最终将以nofilename命名文件；
-     *
+     * <p>
      * 下载文件
-     * @param url 下载地址
-     * @param destFileDir 保存文件路径
+     *
+     * @param url          下载地址
+     * @param destFileDir  保存文件路径
      * @param destFileName 保存文件名
      */
-    private void downLoad(String url, String destFileDir, String destFileName){
+    private void downLoad(String url, String destFileDir, String destFileName) {
         OkGo.get(url)//
                 .tag(this)//
                 .execute(new FileCallback(destFileDir, destFileName) {  //文件下载时，可以指定下载的文件目录和文件名
@@ -195,11 +199,12 @@ public class OkGoUtil {
 
     /**
      * 多文件上传
+     *
      * @param url
      * @param keyName
-     * @param files 文件集合
+     * @param files   文件集合
      */
-    private void uploadFiles(String url, String keyName, List<File> files){
+    private void uploadFiles(String url, String keyName, List<File> files) {
         OkGo.post(url)//
                 .tag(this)//
                 //.isMultipart(true)       // 强制使用 multipart/form-data 表单上传（只是演示，不需要的话不要设置。默认就是false）
@@ -225,6 +230,7 @@ public class OkGoUtil {
 
     /**
      * 请求网络图片
+     *
      * @param url
      */
     private void getBitmap(String url) {

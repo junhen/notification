@@ -1,593 +1,770 @@
 package xx.activity;
 
-import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Calendar;
 
-import android.annotation.SuppressLint;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Bitmap;
-import android.graphics.PixelFormat;
 import android.hardware.Camera;
-import android.hardware.camera2.CameraManager;
-import android.hardware.Camera.CameraInfo;
-import android.hardware.Camera.Parameters;
-import android.hardware.Camera.Size;
 import android.media.MediaRecorder;
 import android.media.MediaRecorder.OnErrorListener;
 import android.media.MediaRecorder.OnInfoListener;
-import android.media.MediaScannerConnection;
-import android.media.MediaScannerConnection.MediaScannerConnectionClient;
-import android.net.Uri;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.PowerManager;
-import android.os.SystemClock;
-import android.text.TextUtils;
+import android.os.Handler;
+import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.SurfaceHolder;
+import android.view.KeyEvent;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.Chronometer;
-import android.widget.ImageView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import com.leui.notification.test.R;
 
-import xx.util.FileUtil;
+public class RecorderVideoActivity extends Activity implements OnClickListener, OnErrorListener, OnInfoListener {
 
-/**
- * Created by xiaoxin on 17-11-13.
- */
+    public static final String TAG = "Recorder-TAG";
+    private final static int CONNECT_OUT_TIME = 5000;  //联网超时时间
 
-public class RecorderVideoActivity extends Activity implements
-        OnClickListener, SurfaceHolder.Callback, OnErrorListener,
-        OnInfoListener {
-    private static final String TAG = "RecorderVideoy-TAG";
-    private final static String CLASS_LABEL = "RecordActivity";
-    private PowerManager.WakeLock mWakeLock;
-    private Button btnStart;// 开始录制按钮
-    private Button btnStop;// 停止录制按钮
-    private MediaRecorder mediaRecorder;// 录制视频的类
-    private VideoView mVideoView;// 显示视频的控件
-    String localPath = "";// 录制的视频路径
-    private Camera mCamera;
-    // 预览的宽高
-    private int previewWidth = 480;
-    private int previewHeight = 480;
-    private Chronometer chronometer;
-    private int frontCamera = 0;// 0是后置摄像头，1是前置摄像头
-    private Button btn_switch;
-    Parameters cameraParameters = null;
-    private SurfaceHolder mSurfaceHolder;
-    int defaultVideoFrameRate = -1;
+    //	private UploadThread mUploadThread;
+//	private Handler mUploadHandler;
+    //按钮
+    private Button btnStart;//开始录像并上传
+    private Button btnStop;//停止录像
+    //显示视频预览的SurfaceView
+    private SurfaceView sView;
+    //录制视频类
+    private MediaRecorder mMediaRecorder = null;
+    //调用摄像头硬件
+    private Camera camera = null;
+    //手机串号
+    private String Imei = null;
+
+    //存储视频路径
+    private String path = null;
+
+    private String date = null;
+    //视频文件
+    private File videoFile;
+    //上传IMEI路径
+    private String ImeiUrl = null;
+    //上传video路径
+    private String Url = "http://59.49.99.195:34562/videoplatform/communication/mainserver?";
+
+    //记录是否正在进行录制
+    private boolean isRecording = false;
+    //记录是否正在进行上传
+    private boolean isUploading = false;
+    //记录是否已经联网
+    private boolean isConNet = false;
+
+//	 DataOutputStream dos = null;
+//	 InputStream fisTwo = null;
+//	 InputStreamReader isr = null;
+//	 BufferedReader br = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.e(TAG, "oncreat----->");
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);// 去掉标题栏
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);// 设置全屏
-        // 选择支持半透明模式，在有surfaceview的activity中使用
-        getWindow().setFormat(PixelFormat.TRANSLUCENT);
-        setContentView(R.layout.recorder_video_activity);
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,
-                CLASS_LABEL);
-        mWakeLock.acquire();
-        initViews();
+        setContentView(R.layout.activity_recorder_video);
+
+        //初始化界面
+        intiView();
+
+        //启动一个上传视频的HandlerThread线程
+//        mUploadThread = new UploadThread("上传video");
+//        mUploadThread.start();
+//        /**
+//         * 开启新线程，上传IMEI号
+//         */
+//        new Thread(new Runnable() {
+//
+//			@Override
+//			public void run() {
+//				// 上传手机IMEI号
+//				uploadImei(Imei);
+//			}
+//		});
+
     }
 
-    private void initViews() {
-        btn_switch = (Button) findViewById(R.id.switch_btn);
-        btn_switch.setOnClickListener(this);
-        btn_switch.setVisibility(View.VISIBLE);
-        mVideoView = (VideoView) findViewById(R.id.mVideoView);
-        btnStart = (Button) findViewById(R.id.recorder_start);
-        btnStop = (Button) findViewById(R.id.recorder_stop);
+
+    //上传IMEI
+
+    protected String uploadImei(String IEMI, String methodname) {
+        Log.e(TAG, "onClick----->Netstart_uploadImei--->" + methodname);
+        ImeiUrl = Url + "method=" + methodname + "&mac=" + Imei;
+        Log.e(TAG, "onClick----->Netstart_uploadImei--->ImeiUrl" + ImeiUrl);
+        HttpParams params = new BasicHttpParams();
+        HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
+        HttpConnectionParams.setConnectionTimeout(params, 5000);
+        HttpClient httpClient = new DefaultHttpClient(params);
+        HttpGet get = new HttpGet(ImeiUrl);
+
+        try {
+
+            HttpResponse response = httpClient.execute(get);
+            Log.e("HttpUtil.getJson", "HttpResponse--> " + response);
+            HttpEntity httpEntity = response.getEntity();
+            Log.e("HttpUtil.getJson", "HttpEntity--> " + httpEntity);
+            String jsonString = EntityUtils.toString(httpEntity);
+            Log.e("HttpUtil.getJson", "String--> " + jsonString);
+            return jsonString;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+
+    /**
+     * 初始化控件
+     */
+    private void intiView() {
+        Log.e(TAG, "intiView----->");
+
+        Imei = getIMEI(this);//获取手机Imei号
+        btnStart = (Button) findViewById(R.id.start);
+        btnStop = (Button) findViewById(R.id.stop);
         btnStart.setOnClickListener(this);
         btnStop.setOnClickListener(this);
-        mSurfaceHolder = mVideoView.getHolder();
-        mSurfaceHolder.addCallback(this);
-        mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        chronometer = (Chronometer) findViewById(R.id.chronometer);
+        btnStop.setEnabled(false);
+
+        sView = (SurfaceView) findViewById(R.id.sview);
+        // 设置分辨率
+        sView.getHolder().setFixedSize(1920, 780);
+        // 设置该组件让屏幕不会自动关闭
+        sView.getHolder().setKeepScreenOn(true);
+
     }
 
-    public void back(View view) {
-        releaseRecorder();
-        releaseCamera();
-        finish();
-    }
 
+    /**
+     * * 响应开始按钮
+     * 开始录像并存储
+     * 开启线程上传
+     */
     @Override
-    protected void onResume() {
-        super.onResume();
-        if (mWakeLock == null) {
-            // 获取唤醒锁,保持屏幕常亮
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,
-                    CLASS_LABEL);
-            mWakeLock.acquire();
-        }
-//      initCamera();
-    }
+    public void onClick(View v) {
+        Log.e(TAG, "onClick------->");
+        switch (v.getId()) {
+            case R.id.start:
+                Log.e(TAG, "onClick----->start" + !isRecording);
+//			if(isNetworkAvailable(this)){
 
-    @SuppressLint("NewApi")
-    private boolean initCamera() {
-        try {
-            if (frontCamera == 0) {
-                mCamera = Camera.open(CameraInfo.CAMERA_FACING_BACK);
-            } else {
-                mCamera = Camera.open(CameraInfo.CAMERA_FACING_FRONT);
-            }
-            Parameters camParams = mCamera.getParameters();
-            //mCamera.lock();
-            mSurfaceHolder = mVideoView.getHolder();
-            mSurfaceHolder.addCallback(this);
-            mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-            mCamera.setDisplayOrientation(90);
+                if (!isRecording) {
+//					Log.e(TAG,"onClick----->Net"+isNetworkAvailable(this));
+                    AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+                        @Override
+                        public void run() {
 
-        } catch (RuntimeException ex) {
-            Log.d(TAG, "init Camera fail " + ex.getMessage());
-            showFailDialog();
-            return false;
-        }
-        return true;
-    }
-
-    /*private void handleSurfaceChanged() {
-        if (mCamera == null) {
-            finish();
-            return;
-        }
-        boolean hasSupportRate = false;
-        List<Integer> supportedPreviewFrameRates = mCamera.getParameters()
-                .getSupportedPreviewFrameRates();
-        if (supportedPreviewFrameRates != null
-                && supportedPreviewFrameRates.size() > 0) {
-            Collections.sort(supportedPreviewFrameRates);
-            for (int i = 0; i < supportedPreviewFrameRates.size(); i++) {
-                int supportRate = supportedPreviewFrameRates.get(i);
-
-                if (supportRate == 15) {
-                    hasSupportRate = true;
+                            uploadImei(Imei, "app_login");
+                        }
+                    });
+                    startRecord();
+                    btnStart.setEnabled(false);
+                    btnStop.setEnabled(true);
+                    isRecording = true;
                 }
-
-            }
-            if (hasSupportRate) {
-                defaultVideoFrameRate = 15;
-            } else {
-                defaultVideoFrameRate = supportedPreviewFrameRates.get(0);
-            }
-
-        }
-        // 获取摄像头的所有支持的分辨率
-        List<> resolutionList = Utils.getResolutionList(mCamera);
-        if (resolutionList != null && resolutionList.size() > 0) {
-            Collections.sort(resolutionList, new Utils.ResolutionComparator());
-            Size previewSize = null;
-            boolean hasSize = false;
-            // 如果摄像头支持640*480，那么强制设为640*480
-            for (int i = 0; i < resolutionList.size(); i++) {
-                Size size = resolutionList.get(i);
-                if (size != null && size.width == 640 && size.height == 480) {
-                    previewSize = size;
-                    previewWidth = previewSize.width;
-                    previewHeight = previewSize.height;
-                    hasSize = true;
-                    break;
+//			}
+//			else{
+                //提示没有联网
+//				Toast.makeText(getApplicationContext(), "请检查一下网络", Toast.LENGTH_SHORT).show();
+//			}
+                break;
+            case R.id.stop:
+                Log.e(TAG, "onClick----->stop" + isRecording);
+                if (isRecording) {
+                    Log.e(TAG, "stop");
+                    btnStart.setEnabled(true);
+                    isRecording = false;
+                    stopRecord();
+                    btnStop.setEnabled(false);
+                    if (isNetworkAvailable(this)) {
+                        Log.e(TAG, "onClick----->Net_stop" + isNetworkAvailable(this));
+                        AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                uploadImei(Imei, "app_exit");
+                            }
+                        });
+                    }
                 }
-            }
-            // 如果不支持设为中间的那个
-            if (!hasSize) {
-                int mediumResolution = resolutionList.size() / 2;
-                if (mediumResolution >= resolutionList.size())
-                    mediumResolution = resolutionList.size() - 1;
-                previewSize = resolutionList.get(mediumResolution);
-                previewWidth = previewSize.width;
-                previewHeight = previewSize.height;
-
-            }
-
-        }
-
-    }*/
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (mWakeLock != null) {
-            mWakeLock.release();
-            mWakeLock = null;
-        }
-    }
-
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.switch_btn:
-                switchCamera();
                 break;
-            case R.id.recorder_start:
-                // start recording
-                if (!startRecording())
-                    return;
-                Toast.makeText(this, "开始录像", Toast.LENGTH_SHORT).show();
-                btn_switch.setVisibility(View.INVISIBLE);
-                btnStart.setVisibility(View.INVISIBLE);
-                btnStart.setEnabled(false);
-                btnStop.setVisibility(View.VISIBLE);
-                // 重置其他
-                chronometer.setBase(SystemClock.elapsedRealtime());
-                chronometer.start();
-                break;
-            case R.id.recorder_stop:
-                btnStop.setEnabled(false);
-                // 停止拍摄
-                stopRecording();
-                btn_switch.setVisibility(View.VISIBLE);
-                chronometer.stop();
-                btnStart.setVisibility(View.VISIBLE);
-                btnStop.setVisibility(View.INVISIBLE);
-                new AlertDialog.Builder(this)
-                        .setMessage("是否保存")
-                        .setPositiveButton(R.string.ok,
-                                new DialogInterface.OnClickListener() {
-
-                                    @Override
-                                    public void onClick(DialogInterface dialog,
-                                                        int which) {
-                                        dialog.dismiss();
-                                        sendVideo(null);
-
-                                    }
-                                })
-                        .setNegativeButton(R.string.cancel,
-                                new DialogInterface.OnClickListener() {
-
-                                    @Override
-                                    public void onClick(DialogInterface dialog,
-                                                        int which) {
-                                        if (localPath != null) {
-                                            File file = new File(localPath);
-                                            if (file.exists())
-                                                file.delete();
-                                        }
-                                        finish();
-
-                                    }
-                                }).setCancelable(false).show();
-                break;
-
             default:
                 break;
         }
     }
 
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                               int height) {
-        // 将holder，这个holder为开始在oncreat里面取得的holder，将它赋给surfaceHolder
-        mSurfaceHolder = holder;
-    }
 
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        if (mCamera == null) {
-            if (!initCamera()) {
-                return;
+    //开始录像并上传
+    private void startRecord() {
+        Log.e(TAG, "startRecord------>");
+        //初始化MediaRecorder和Camera对象，并设置MediaRecorder的参数
+        if (mMediaRecorder == null) {
+            mMediaRecorder = new MediaRecorder();
+        }
+        if (camera == null) {
+            camera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
+        }
+
+        if (camera != null) {
+            camera.setDisplayOrientation(90);
+            camera.unlock();
+        }
+        mMediaRecorder.setCamera(camera);
+
+        // 这两项需要放在setOutputFormat之前
+        mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+        mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);// 设置从摄像头采集图像
+
+        // 设置视频文件的输出格式，必须在设置声音编码格式、图像编码格式之前设置
+        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        // 设置声音编码的格式
+        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        // 设置图像编码的格式
+        mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+
+        mMediaRecorder.setVideoSize(640, 480);
+        mMediaRecorder.setVideoFrameRate(30);
+        mMediaRecorder.setVideoEncodingBitRate(3 * 1024 * 1024);
+        mMediaRecorder.setOrientationHint(90);
+        // 指定使用SurfaceView来预览视频
+        mMediaRecorder.setPreviewDisplay(sView.getHolder().getSurface());
+        //设置记录会话的最大持续时间（毫秒）
+        mMediaRecorder.setMaxDuration(3 * 1000);
+
+        //增加监听器
+//		mMediaRecorder.setOnErrorListener(this);
+        mMediaRecorder.setOnInfoListener(this);
+
+        path = getSDPath();
+        if (path != null) {
+            File dir = new File(path + "/1ywhtest");
+            if (!dir.exists()) {
+                dir.mkdir();
             }
-
-        }
-        try {
-            mCamera.setPreviewDisplay(mSurfaceHolder);
-            mCamera.startPreview();
-            //handleSurfaceChanged();
-        } catch (Exception e1) {
-            Log.d(TAG, "start preview fail " + e1.getMessage());
-        }
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder arg0) {
-        Log.d(TAG, "surfaceDestroyed");
-    }
-
-    public boolean startRecording() {
-        if (mediaRecorder == null) {
-            if (!initRecorder())
-                return false;
-        }
-        mediaRecorder.setOnInfoListener(this);
-        mediaRecorder.setOnErrorListener(this);
-        mediaRecorder.start();
-        return true;
-    }
-
-    @SuppressLint("NewApi")
-    private boolean initRecorder() {
-        if (!FileUtil.hasSdcard()) {
-            showNoSDCardDialog();
-            return false;
-        }
-
-        if (mCamera == null) {
-            if (!initCamera()) {
-                return false;
-            }
-        }
-        mVideoView.setVisibility(View.VISIBLE);
-        // TODO init button
-        mCamera.stopPreview();
-        mediaRecorder = new MediaRecorder();
-        mCamera.unlock();
-        mediaRecorder.setCamera(mCamera);
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
-        // 设置录制视频源为Camera（相机）
-        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-        if (frontCamera == 1) {
-            mediaRecorder.setOrientationHint(270);
+            date = getDate();
+            path = dir + "/" + date + ".mp4";
+            Log.e(TAG, "startRecord------>path" + path);
+//			videoFile = new File(path);
         } else {
-            mediaRecorder.setOrientationHint(90);
+            Log.e(TAG, "startRecord------>path" + path);
+            return;
         }
-        // 设置录制完成后视频的封装格式THREE_GPP为3gp.MPEG_4为mp4
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-        // 设置录制的视频编码h263 h264
-        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-        // 设置视频录制的分辨率。必须放在设置编码和格式的后面，否则报错
-        mediaRecorder.setVideoSize(previewWidth, previewHeight);
-        // 设置视频的比特率
-        mediaRecorder.setVideoEncodingBitRate(384 * 1024);
-        // // 设置录制的视频帧率。必须放在设置编码和格式的后面，否则报错
-        if (defaultVideoFrameRate != -1) {
-            //mediaRecorder.setVideoFrameRate(defaultVideoFrameRate);
-        }
-        // 设置视频文件输出的路径
-        localPath = FileUtil.getSDPath()
-                + System.currentTimeMillis() + ".mp4";
-        Log.d(TAG, "localPath : "+localPath);
-        mediaRecorder.setOutputFile(localPath);
-        mediaRecorder.setMaxDuration(30000);
-        mediaRecorder.setPreviewDisplay(mSurfaceHolder.getSurface());
+        mMediaRecorder.setOutputFile(path);
+
         try {
-            mediaRecorder.prepare();
+            mMediaRecorder.prepare();
         } catch (IllegalStateException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
-            return false;
         } catch (IOException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
-            return false;
         }
-        return true;
+        mMediaRecorder.start();
+        Log.e(TAG, "startRecord------>mMediaRecorder------->start");
 
     }
 
-    public void stopRecording() {
-        if (mediaRecorder != null) {
-            mediaRecorder.setOnErrorListener(null);
-            mediaRecorder.setOnInfoListener(null);
-            try {
-                mediaRecorder.stop();
-                mediaRecorder.reset();
-            } catch (IllegalStateException e) {
-                Log.d(TAG, "stopRecording error:" + e.getMessage());
-            }
-        }
-        releaseRecorder();
 
-        if (mCamera != null) {
-            releaseCamera();
-        }
+//    private void stopRecord() {
+//		// TODO Auto-generated method stub
+//    	Log.e(TAG, "startRecord------>mMediaRecorder------->start");
+//			try {
+//
+//				mMediaRecorder.stop();
+//				mMediaRecorder.reset();
+//				mMediaRecorder.release();
+//				mMediaRecorder = null;
+//				if (camera != null) {
+//					camera.release();
+//					camera = null;
+//				}
+//			} catch (Exception e) {
+//				// TODO: handle exception
+//				e.printStackTrace();
+//			}
+//		}
+//
+
+
+    /**
+     * 获取手机IMEI号
+     */
+    public String getIMEI(Context context) {
+        TelephonyManager telephonyManager = (TelephonyManager) context
+                .getSystemService(context.TELEPHONY_SERVICE);
+        String imei = telephonyManager.getDeviceId();
+        return imei;
     }
 
-    private void releaseRecorder() {
-        if (mediaRecorder != null) {
-            mediaRecorder.release();
-            mediaRecorder = null;
+
+    /**
+     * 获取SD path
+     *
+     * @return
+     */
+    public String getSDPath() {
+        File sdDir = null;
+        boolean sdCardExist = Environment.getExternalStorageState().equals(
+                android.os.Environment.MEDIA_MOUNTED); // 判断sd卡是否存在
+        if (sdCardExist) {
+            sdDir = Environment.getExternalStorageDirectory();// 获取跟目录
+            return sdDir.toString();
         }
+        return null;
     }
 
-    protected void releaseCamera() {
-        try {
-            if (mCamera != null) {
-                mCamera.stopPreview();
-                mCamera.release();
-                mCamera = null;
-            }
-        } catch (Exception e) {
-            Log.d(TAG,"Exception e : "+e);
-        }
+    /**
+     * 获取系统时间
+     *
+     * @return
+     */
+    public static String getDate() {
+        Calendar ca = Calendar.getInstance();
+        int year = ca.get(Calendar.YEAR); // 获取年份
+        int month = ca.get(Calendar.MONTH); // 获取月份
+        int day = ca.get(Calendar.DATE); // 获取日
+        int minute = ca.get(Calendar.MINUTE); // 分
+        int hour = ca.get(Calendar.HOUR); // 小时
+        int second = ca.get(Calendar.SECOND); // 秒
+
+        String date = "" + year + (month + 1) + day + String.format("%02d", hour) + String.format("%02d", minute) + String.format("%02d", second);
+        Log.e(TAG, "date:" + date);
+        Log.e(TAG, "minute:" + String.format("%02d", minute));
+
+        return date;
     }
 
-    @SuppressLint("NewApi")
-    public void switchCamera() {
-        if (mCamera == null) {
-            return;
-        }
-        if (Camera.getNumberOfCameras() >= 2) {
-            btn_switch.setEnabled(false);
-            releaseCamera();
 
-            switch (frontCamera) {
-                case 0:
-                    mCamera = Camera.open(CameraInfo.CAMERA_FACING_FRONT);
-                    frontCamera = 1;
-                    break;
-                case 1:
-                    mCamera = Camera.open(CameraInfo.CAMERA_FACING_BACK);
-                    frontCamera = 0;
-                    break;
-            }
-            try {
-                //mCamera.lock();
-                mCamera.setDisplayOrientation(90);
-                mCamera.setPreviewDisplay(mVideoView.getHolder());
-                mCamera.startPreview();
-            } catch (IOException e) {
-                mCamera.release();
-                mCamera = null;
-            }
-            btn_switch.setEnabled(true);
-        }
+//	//上传的线程类，主要是通过handler的post，是的runnable在此线程执行
+//    class UploadThread extends HandlerThread {
+//        public UploadThread(String name) {
+//            super(name);
+//        }
+//
+//        @Override
+//        protected void onLooperPrepared() {
+//        	mUploadHandler = new Handler(getLooper());
+//        }
+//    }
 
-    }
-
-    MediaScannerConnection msc = null;
-    ProgressDialog progressDialog = null;
-
-    public void sendVideo(View view) {
-        if (TextUtils.isEmpty(localPath)) {
-            Log.e(TAG, "sendVideo recorder fail please try again!");
-            return;
-        }
-        if (msc == null)
-            msc = new MediaScannerConnection(this,
-                    new MediaScannerConnectionClient() {
-
-                        @Override
-                        public void onScanCompleted(String path, Uri uri) {
-                            Log.d(TAG, "scanner completed");
-                            msc.disconnect();
-                            progressDialog.dismiss();
-                            setResult(RESULT_OK, getIntent().putExtra("uri", uri));
-                            finish();
-                        }
-
-                        @Override
-                        public void onMediaScannerConnected() {
-                            msc.scanFile(localPath, "video/*");
-                        }
-                    });
-
-
-        if (progressDialog == null) {
-            progressDialog = new ProgressDialog(this);
-            progressDialog.setMessage("processing...");
-            progressDialog.setCancelable(false);
-        }
-        progressDialog.show();
-        msc.connect();
-
-    }
 
     @Override
     public void onInfo(MediaRecorder mr, int what, int extra) {
-        Log.v(TAG, "onInfo");
         if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
-            Log.v(TAG, "max duration reached");
-            stopRecording();
-            btn_switch.setVisibility(View.VISIBLE);
-            chronometer.stop();
-            btnStart.setVisibility(View.VISIBLE);
-            btnStop.setVisibility(View.INVISIBLE);
-            chronometer.stop();
-            if (localPath == null) {
-                return;
-            }
-            String st3 = "是否保存";
-            new AlertDialog.Builder(this)
-                    .setMessage(st3)
-                    .setPositiveButton(R.string.ok,
-                            new DialogInterface.OnClickListener() {
+            Log.e(TAG, "onInfo------->记录一个新视频");
 
-                                @Override
-                                public void onClick(DialogInterface arg0,
-                                                    int arg1) {
-                                    arg0.dismiss();
-                                    sendVideo(null);
+            //记录一个新视频
 
-                                }
-                            }).setNegativeButton(R.string.cancel, null)
-                    .setCancelable(false).show();
+//			mMediaRecorder.stop();
+            resetRecorder();
+//			startRecord();
         }
 
     }
+
+
+    /**
+     * 记录一个新视频
+     */
+    private void resetRecorder() {
+//		releaseRecodeVideo();
+        Log.e(TAG, "resetRecorder------->");
+        stopRecord();
+        startRecord();
+
+    }
+
+
+    private void stopRecord() {
+        Log.e(TAG, "stopRecord-------->");
+//		if (isNetworkAvailable(this)){
+        if (path != null) {
+            Log.e(TAG, "stopRecord-------->path" + path);
+            uploadFileInSubThread(path);
+            path = null;
+        }
+//		}else{
+        //提示没有联网
+//			Toast.makeText(getApplicationContext(), "请检查一下网络", Toast.LENGTH_SHORT).show();
+//		}
+
+        if (mMediaRecorder != null) {
+//        	mMediaRecorder.setOnErrorListener(null);
+            mMediaRecorder.setOnInfoListener(null);
+            mMediaRecorder.stop();
+//        	mMediaRecorder.reset();
+            mMediaRecorder.release();
+            mMediaRecorder = null;
+        }
+        if (camera != null) {
+            camera.release();
+            camera = null;
+        }
+
+    }
+
+//	private void releaseRecodeVideo() {
+//		if (isNetworkAvailable(this)){
+//			if(path != null)
+//			{
+//				uploadFileInSubThread(path);
+//				path=null;
+//			}
+//		}else{
+//			//提示没有联网
+//			Toast.makeText(getApplicationContext(), "请检查一下网络", Toast.LENGTH_SHORT).show();
+//		}
+//
+//        if (mMediaRecorder != null) {
+////        	mMediaRecorder.setOnErrorListener(null);
+//        	mMediaRecorder.setOnInfoListener(null);
+//        	mMediaRecorder.stop();
+////        	mMediaRecorder.reset();
+//        	mMediaRecorder.release();
+//        	mMediaRecorder = null;
+//        }
+//        if (camera != null) {
+//            camera.release();
+//            camera = null;
+//        }
+//
+//	}
+
+    /**
+     * 使用子线程上传记录好的视频
+     */
+    public void uploadFileInSubThread(final String filePath) {
+        Log.e(TAG, "uploadFileInSubThread");
+        AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+            @Override
+            public void run() {
+                uploadFile(Url, filePath);
+            }
+        });
+    }
+
+
+    /**
+     * 使用子线程上传记录好的视频
+     */
+//	private void sendRecorde() {
+//		// TODO Auto-generated method stub
+//		final String filePath = path;
+//        final String fileName = date + ".mp4";
+//        mUploadHandler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                //调用上传录像文件的方法
+//                uploadFile(videoUrl, filePath, fileName);
+//                File file = new File(filePath);
+//                file.delete();
+//
+//            }
+//        });
+//	}
+    protected void uploadFile(String Url, String filePath) {
+        Log.e(TAG, "uploadFile------->");
+        //从视频文件完整路径中取出文件名
+        String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+        Log.e(TAG, "uploadFile------->fileName" + fileName);
+        String header = "method=app_commit&mac=" + Imei + "&video=" + fileName;
+        Log.e(TAG, "uploadFile------->header----->" + header);
+        try {
+            header = URLEncoder.encode(header, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        header = String.format("%06d", header.length()) + header;
+        Log.e(TAG, "uploadFile------->headerutf-8----->" + header);
+
+        File upfile = new File(filePath);
+
+        Log.e(TAG, "uploadFile------>upfile" + upfile.exists());
+        Log.e(TAG, "uploadFile------>upfilename" + upfile.getName());
+        Log.e(TAG, "uploadFile------->filePath----->" + filePath);
+
+        int fileLength = (int) upfile.length(); //文件长度
+        Log.e(TAG, "uploadFile------->fileLength" + fileLength);
+        int fileNameLength = 4;
+
+        //定义一个字节数组
+        byte[] b = new byte[header.length() + fileNameLength + fileLength];
+        int pos = 0;
+
+        //将前面生成的长度和命令字符串放到字节数组中
+        System.arraycopy(header.getBytes(), 0, b, 0, header.length());
+        pos += header.length();
+        Log.e(TAG, "uploadFile------->pos" + pos);
+        //将文件长度放到字节数组中
+
+        b[pos++] = (byte) ((fileLength & 0xff000000) >> 24);
+        b[pos++] = (byte) ((fileLength & 0x00ff0000) >> 16);
+        b[pos++] = (byte) ((fileLength & 0x0000ff00) >> 8);
+        b[pos++] = (byte) (fileLength & 0x000000ff);
+        //将文件内容放到字节数组中
+        InputStream in = null;
+        try {
+            if (upfile != null) {
+                in = new FileInputStream(upfile);
+                in.read(b, pos, fileLength);            //从文件中读到字节数组中
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        Log.e(TAG, "uploadFile------->Post-->b" + in.toString());
+//	    String sback = Post(videoUrl, b);
+        Post(Url, b);
+        String code;
+//	    if(sback!=null){
+//			try {
+//				 Log.e(TAG, "uploadFile------->sback"+sback);
+//					JSONObject jObject=new JSONObject(sback);
+//
+//				    code=jObject.getString("code");
+//
+//				if(code.equals("1")){
+////					file.delete();
+//				}
+//				else{
+//					//重传
+//					Post(videoUrl, b);
+//				}
+//
+//			} catch (JSONException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//	    }else{
+//	    	//提示上传出错的toast
+//	    }
+//
+
+
+    }
+
+
+    private String Post(String url, byte[] filebyte) {
+        Log.e(TAG, "Post------->purl: " + url);
+        String str = null;
+        try {
+            // 第一步：创建必要的URL对象
+            URL httpUrl = new URL(url);
+            // 第二步：根据URL对象，获取HttpURLConnection对象
+            HttpURLConnection connection = (HttpURLConnection) httpUrl.openConnection();
+            // 设置每次传输的流大小，可以有效防止手机因为内存不足崩溃
+            // 此方法用于在预先不知道内容长度时启用没有进行内部缓冲的 HTTP 请求正文的流。
+//	            connection.setChunkedStreamingMode(128 * 1024);// 128K
+            // 第三步：为HttpURLConnection对象设置必要的参数（是否允许输入数据、连接超时时间、请求方式）
+            connection.setConnectTimeout(CONNECT_OUT_TIME);
+            connection.setReadTimeout(CONNECT_OUT_TIME);
+            connection.setRequestMethod("POST");
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setUseCaches(false);
+            // 第四步：向服务器写入数据
+            OutputStream out = connection.getOutputStream();
+            //            String content = "name=" + name + "&pwd=" + pwd;// 无论服务器转码与否，这里不需要转码，因为Android系统自动已经转码为utf-8啦
+            out.write(filebyte);
+            out.flush();
+            out.close();
+
+            int response = connection.getResponseCode();            //获得服务器的响应码
+            Log.e(TAG, "Post------->response" + response);
+//	            if(response == HttpURLConnection.HTTP_OK) {
+//	                InputStream inptStream = connection.getInputStream();
+//	                //处理服务器的响应结果
+//	                return dealResponseResult(inptStream);
+//	            }
+            // 第五步：开始读取服务器返回数据
+//	            BufferedReader reader = new BufferedReader(new InputStreamReader(
+//	                    connection.getInputStream()));
+//	            final StringBuffer buffer = new StringBuffer();
+//
+//	            while ((str = reader.readLine()) != null) {
+//	                buffer.append(str);
+//	            }
+//	            reader.close();
+//	            Log.e(TAG, "Post------->str"+str);
+            return str;
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+//		        return "err: " + e.getMessage().toString();
+            return null;
+        }
+
+
+    }
+
+
+	/*
+        * Function  :   处理服务器的响应结果（将输入流转化成字符串）
+	    * Param     :   inputStream服务器的响应输入流
+	    */
+//	   public static String dealResponseResult(InputStream inputStream) {
+//	       String resultData = null;      //存储处理结果
+//	       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//	      byte[] data = new byte[1024];
+//	      int len = 0;
+//	       try {
+//	          while((len = inputStream.read(data)) != -1) {
+//	             byteArrayOutputStream.write(data, 0, len);
+//	          }
+//	     } catch (IOException e) {
+//	         e.printStackTrace();
+//	        }
+//	       resultData = new String(byteArrayOutputStream.toByteArray());
+//	       return resultData;
+//	   }
+
 
     @Override
     public void onError(MediaRecorder mr, int what, int extra) {
-        Log.e(TAG, "recording onError:");
-        stopRecording();
-        Toast.makeText(this,
-                "Recording error has occurred. Stopping the recording",
-                Toast.LENGTH_SHORT).show();
-
+        // TODO Auto-generated method stub
+        Log.e(TAG, "onError   mr: " + mr + ",  what: " + mr + ",  extra: " + extra);
     }
 
-    public void saveBitmapFile(Bitmap bitmap) {
-        File file = new File(Environment.getExternalStorageDirectory(), "a.jpg");
-        try {
-            BufferedOutputStream bos = new BufferedOutputStream(
-                    new FileOutputStream(file));
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
-            bos.flush();
-            bos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    /**
+     * 检测当的网络（WLAN、3G/2G）状态
+     *
+     * @param context Context
+     * @return true 表示网络可用
+     */
+    public static boolean isNetworkAvailable(Context context) {
+        Log.e(TAG, "isNetworkAvailable------->");
+        ConnectivityManager connectivity = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivity != null) {
+            NetworkInfo info = connectivity.getActiveNetworkInfo();
+            if (info != null && info.isConnected()) {
+                // 当前网络是连接的
+                if (info.getState() == NetworkInfo.State.CONNECTED) {
+                    // 当前所连接的网络可用
+                    return true;
+                }
+            }
         }
-
+        return false;
     }
 
     @Override
     protected void onDestroy() {
+        // TODO Auto-generated method stub
+        Log.e(TAG, "onDestroy------->");
         super.onDestroy();
-        releaseRecorder();
-        releaseCamera();
 
-        if (mWakeLock != null) {
-            mWakeLock.release();
-            mWakeLock = null;
+
+    }
+
+    //	/**
+//	 * 监听返回--是否退出程序
+//	 */
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        Log.e(TAG, "onKeyDown------->");
+        boolean flag = true;
+        String title = null;
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // 是否退出应用
+            if (path != null) {
+                title = "有未上传的视频，确定要退出吗？";
+            } else {
+                title = "确定要app退出吗？";
+            }
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setIcon(android.R.drawable.ic_dialog_info);
+            builder.setTitle(title);
+            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    Log.e(TAG, "DialogInterface------->AsyncTask");
+                    AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            uploadImei(Imei, "app_exit");
+                        }
+                    });
+                    if (isRecording) {
+
+                        if (mMediaRecorder != null) {
+                            mMediaRecorder.setOnErrorListener(null);
+                            mMediaRecorder.setOnInfoListener(null);
+                            mMediaRecorder.stop();
+                            mMediaRecorder.reset();
+                            mMediaRecorder.release();
+                            mMediaRecorder = null;
+                        }
+                        if (camera != null) {
+                            camera.release();
+                            camera = null;
+                        }
+                    }
+
+
+                    dialog.dismiss();
+                    finish();
+//	                  android.os.Process.killProcess(android.os.Process.myPid());
+                    System.exit(0);
+                    //退出
+//	                  AppManager.getAppManager().AppExit(cont);
+                }
+            });
+            builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            builder.show();
         }
 
-    }
-
-    @Override
-    public void onBackPressed() {
-        back(null);
-    }
-
-    private void showFailDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("提示")
-                .setMessage("打开错误")
-                .setPositiveButton(R.string.ok,
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog,
-                                                int which) {
-                                finish();
-
-                            }
-                        }).setCancelable(false).show();
-
-    }
-
-    private void showNoSDCardDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("提示")
-                .setMessage("No sd card!")
-                .setPositiveButton(R.string.ok,
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog,
-                                                int which) {
-                                finish();
-
-                            }
-                        }).setCancelable(false).show();
+        return flag;
     }
 
 }
