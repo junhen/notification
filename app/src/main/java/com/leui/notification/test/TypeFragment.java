@@ -23,6 +23,7 @@ import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.RequiresApi;
 import android.support.v4.content.FileProvider;
 import android.text.Html;
 import android.text.SpannableString;
@@ -84,7 +85,8 @@ public class TypeFragment extends Fragment {
     private WindowManager.LayoutParams wmParams;
     private int temp = 0;
 	boolean mNeedExplain = false;
-    
+	private static final String DEFAULT_GROUP_KEY = "default_group";
+
 	@TargetApi(Build.VERSION_CODES.M)
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -126,6 +128,7 @@ public class TypeFragment extends Fragment {
 			 v.findViewById(R.id.notification_light).setOnClickListener(listener);
 			 v.findViewById(R.id.type_missed_call).setOnClickListener(listener);
 			v.findViewById(R.id.type_self_content).setOnClickListener(listener);
+			v.findViewById(R.id.default_summary).setOnClickListener(listener);
 			mBigText.setOnClickListener(listener);
 			mInbox.setOnClickListener(listener);
 			mBigPicture.setOnClickListener(listener);
@@ -136,6 +139,7 @@ public class TypeFragment extends Fragment {
 		}
 		initPackageAndInternal(0);
 		//updateFloatViewVisible(true);
+		HelperUtil.addOverlay(getActivity());
 		HelperUtil.addFloatView(getContext(), mRandom);
 		return v;
 	}
@@ -276,6 +280,9 @@ public class TypeFragment extends Fragment {
 					case R.id.type_self_content:
 						notif = getSelfContent(builder);
 						break;
+					case R.id.default_summary:
+						notif = getDefaultSummaryNotification(builder);
+						break;
 					default:
 						notif = getDefaultNotification(builder);
 						notif.flags |= Notification.FLAG_SHOW_LIGHTS;
@@ -358,10 +365,12 @@ public class TypeFragment extends Fragment {
 		builder.setSmallIcon(R.drawable.ic_launcher)
 				.setWhen(System.currentTimeMillis())
 				.setContentTitle("Default Title")
-				.setContentText("Default Text")
+				.setContentText("Default Text   Default Text" +
+						"   Default Text   Default Text   Default Text   Default Text" +
+						"   Default Text   Default Text   Default Text   Default Text")
 				.setContentInfo("Default Info")
 				.setContentIntent(PendingIntent.getActivity(mContext, 0, new Intent(mContext, MainActivity.class),0))
-				.setGroup("default")
+				.setGroup(DEFAULT_GROUP_KEY)
 				.setLargeIcon(largeIcon);
 		setTicker(builder, "getDefaultNotification");
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -518,6 +527,25 @@ public class TypeFragment extends Fragment {
 		} else {
 			return builder.getNotification();
 		}
+	}
+
+	@TargetApi(Build.VERSION_CODES.M)
+	private Notification getDefaultSummaryNotification(Builder builder) {
+
+		/*Icon largeIcon = Icon.createWithResource(mContext, R.drawable.ic_launcher);
+		return builder.setSmallIcon(R.drawable.ic_launcher)
+				.setLargeIcon(largeIcon)
+				.setWhen(System.currentTimeMillis())
+				.setContentTitle("Default Title")
+				.setContentText("Default Text   Default Text" +
+						"   Default Text   Default Text   Default Text   Default Text" +
+						"   Default Text   Default Text   Default Text   Default Text")
+				.setGroup(DEFAULT_GROUP_KEY)
+				.setGroupSummary(true)
+				.build();*/
+		builder.setGroup("bigPicture")
+				.setGroupSummary(true);
+		return getBigPictureStyle(builder);
 	}
 
 	private Notification getOldNotification() {

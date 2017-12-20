@@ -6,8 +6,8 @@ android {
 
     defaultConfig { //默认配置
         applicationId "com.leui.notification.test" //应用程序的包名
-        minSdkVersion 17 //支持的最低版本
-        targetSdkVersion 21 //支持的目标版本
+        minSdkVersion 24 //支持的最低版本
+        targetSdkVersion 24 //支持的目标版本
         versionCode 101//版本号
         versionName "1.0.1"//版本名
         vectorDrawables.useSupportLibrary = true
@@ -65,8 +65,15 @@ android {
     }
 
     lintOptions {
-        abortOnError false//lint时候终止错误上报,防止编译的时候莫名的失败
+        abortOnError false   //lint时候终止错误上报,防止编译的时候莫名的失败
     }*/
+
+    //checkReleaseBuilds就是在打包Release版本的时候进行检测，这里就直接关掉了，也可以打开，这样报错还会显示出来。
+    // 关键的就是abortOnError一定要设为false，这样即使有报错也不会停止打包了。
+    lintOptions{
+        checkReleaseBuilds false
+        abortOnError false
+    }
 }
 
 dependencies {

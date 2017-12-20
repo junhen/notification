@@ -1,8 +1,13 @@
 package com.leui.notification.test;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Settings;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -71,6 +76,15 @@ public class HelperUtil {
             wm.removeView(floatView);
             floatView = null;
             mView = null;
+        }
+    }
+
+    public static void addOverlay(Activity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(activity)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + activity.getPackageName()));
+                activity.startActivityForResult(intent, 0);
+            }
         }
     }
 

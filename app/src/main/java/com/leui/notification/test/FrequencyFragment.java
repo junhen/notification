@@ -108,6 +108,7 @@ public class FrequencyFragment extends Fragment implements OnClickListener, NewW
                     mNewWindowUtil = NewWindowUtil.getInstance(getActivity());
                     mNewWindowUtil.addFloatView(this);
                 }*/
+                NewWindowUtil.addOverlay(getActivity());
                 NewWindowUtil.getInstance().addFloatView(mContext, ON_OFF_KEYGUARD, this);
                 break;
             case R.id.btn_remove_float_view:

@@ -113,6 +113,7 @@ public class MessagingFragment extends Fragment implements View.OnClickListener,
         setButtonsState(false);
         //增加一个悬浮窗，可以在锁屏下和下拉状态栏的时候显示
         //HelperUtil.addFloatView(getContext(), mSendSingleConversation);
+        NewWindowUtil.addOverlay(getActivity());
         NewWindowUtil.getInstance().addFloatView(getActivity(), SEDN_MESSAGE_NOTIFICATION, this);
 
         return rootView;
