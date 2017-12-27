@@ -129,6 +129,7 @@ public class TypeFragment extends Fragment {
 			 v.findViewById(R.id.type_missed_call).setOnClickListener(listener);
 			v.findViewById(R.id.type_self_content).setOnClickListener(listener);
 			v.findViewById(R.id.default_summary).setOnClickListener(listener);
+			v.findViewById(R.id.two_default).setOnClickListener(listener);
 			mBigText.setOnClickListener(listener);
 			mInbox.setOnClickListener(listener);
 			mBigPicture.setOnClickListener(listener);
@@ -283,6 +284,20 @@ public class TypeFragment extends Fragment {
 					case R.id.default_summary:
 						notif = getDefaultSummaryNotification(builder);
 						break;
+					case R.id.two_default:
+						notif = getDefaultNotification(builder);
+						Log.d(TAG,"new notification = "+notif);
+
+						if(CUSTOMIZED_NOTIFICATION_ICON_ENABLE){
+							if(mCustomizedNotificationIcon.isChecked()){
+								setNotificationIcon(notif,mRandomizer.getRandomIconId());
+							}
+						}
+						notif.flags |= Notification.FLAG_AUTO_CANCEL;
+						//这里使用相同得id来发送两条
+						((MainActivity)mContext).sendNotification(notif, 1000);
+						((MainActivity)mContext).sendNotification(notif, 1000);
+						return;
 					default:
 						notif = getDefaultNotification(builder);
 						notif.flags |= Notification.FLAG_SHOW_LIGHTS;

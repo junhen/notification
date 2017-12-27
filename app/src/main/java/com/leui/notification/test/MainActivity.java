@@ -154,6 +154,10 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 	    sendNotification(NOTIF_REF++, notif);
 	}
 
+	public void sendNotification(Notification notif, int id){
+		sendNotification(id, notif);
+	}
+
 	public ArrayList<Integer> getIds() {
 		return mIds;
 	}

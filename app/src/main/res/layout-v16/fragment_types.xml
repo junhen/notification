@@ -105,6 +105,15 @@
                 android:text="DefaultSum" />
 
             <Button
+                android:id="@+id/two_default"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_column="3"
+                android:layout_row="0"
+                android:text="two" />
+
+            <Button
                 android:id="@+id/dismiss_two_notifications"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
