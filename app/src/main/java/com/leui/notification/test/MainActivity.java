@@ -87,12 +87,19 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		final WindowManager.LayoutParams params = win.getAttributes();
 		if(SHOW_WHEN_LOCK) params.flags |= WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
 		if(DISMISS_KEYGUARD) params.flags |= WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD;
+		//params.flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+		//params.flags |= WindowManager.LayoutParams.TYPE_STATUS_BAR;
+		//params.flags |= WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL;
+		//params.flags |= WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
 		mKeyguardManager = (KeyguardManager) this.getSystemService(Context.KEYGUARD_SERVICE);
 		Log.d(TAG,"onCreate(),isKeyguardLocked:"+mKeyguardManager.isKeyguardLocked());
 		if(DISABLE_KEYGUARD){
     		mKeyguardLock = mKeyguardManager.newKeyguardLock("MainActivity");
     		mKeyguardLock.disableKeyguard();
 		}
+		//win.getDecorView().setSystemUiVisibility(View.STATUS_BAR_HIDDEN);
+		//win.getDecorView().setSystemUiVisibility(View.STATUS_BAR_VISIBLE);
+		//win.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 		// Set up the action bar.
 		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);

@@ -76,4 +76,23 @@
             android:padding="10dip"
             android:text="remove" />
     </LinearLayout>
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="continuous send custom notification with same id and contentview" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+
+        <Button
+            android:id="@+id/send_custom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dip"
+            android:text="send_custom" />
+    </LinearLayout>
 </LinearLayout>

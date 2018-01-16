@@ -61,6 +61,7 @@ public class WidgetActivity extends Activity implements View.OnClickListener{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG,"onCreate");
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         setContentView(R.layout.activity_widget);
         mAddWidgetBn = (Button) findViewById(R.id.add_widget_bn);
         mAddWidgetBn.setOnClickListener(this);

@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,10 +24,12 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 import xx.deviceManager.DeviceMethod;
 import xx.deviceManager.MyDeviceAdminReceiver;
@@ -67,6 +70,7 @@ public class FrequencyFragment extends Fragment implements OnClickListener, NewW
         v.findViewById(R.id.btn_update).setOnClickListener(this);
         v.findViewById(R.id.btn_add_float_view).setOnClickListener(this);
         v.findViewById(R.id.btn_remove_float_view).setOnClickListener(this);
+        v.findViewById(R.id.send_custom).setOnClickListener(this);
         mStatus = (TextView) v.findViewById(R.id.tv_status);
         mFrequency = (EditText) v.findViewById(R.id.et_frequency);
         mRandomizer = new Randomizer(mContext);
@@ -134,11 +138,15 @@ public class FrequencyFragment extends Fragment implements OnClickListener, NewW
         for (int i = 0; i < 3; i++) {
             builder.addAction(mRandomizer.getRandomIconId(), "" + time, intent);
         }
+        PendingIntent pendIntent = PendingIntent.getActivity(mContext, 0, new Intent(), 0);
+        PendingIntent pendIntent2 = PendingIntent.getActivity(mContext, 0, new Intent(), 0);
         builder.setContentTitle("Reduced BigText title" + time)
                 .setContentText("" + getActivity().getPackageName() + System.currentTimeMillis())
                 .setContentInfo("Info" + time)
                 .setShowWhen(false)
                 .setTicker("getBigTextStyle" + System.currentTimeMillis())
+                .setContent(getUpdateRemoteviews(0,"安装成功",
+                        null,null,R.drawable.preview,pendIntent,pendIntent2))
                 .setSmallIcon(mRandomizer.getRandomIconId());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             builder.setLargeIcon(Icon.createWithResource(getContext(), mRandomizer.getRandomIconId()));
@@ -155,6 +163,63 @@ public class FrequencyFragment extends Fragment implements OnClickListener, NewW
 
         mStatus.setText("running:" + 1000 / (System.currentTimeMillis() - lastNotificationTime) + "hz");
         lastNotificationTime = System.currentTimeMillis();
+
+    }
+
+
+    private RemoteViews remoteviews;
+    private int times = 0;
+
+    public RemoteViews getUpdateRemoteviews(int iconId, String title,
+                                            String titleContent, String content,
+                                            int srcId, PendingIntent switchIntent,
+                                            PendingIntent switchIntent2) {
+        if(remoteviews == null)
+            remoteviews = new RemoteViews(mContext.getPackageName(), R.layout.le_update_notify);
+        Log.d(TAG, "titleContent: " + titleContent + ", content: " + content);
+
+        for (int i = 0; i < 6 && times < 800; i++, times++) {
+            if (iconId != 0) {
+                remoteviews.setImageViewResource(R.id.notify_icon, iconId);
+            }
+            if (TextUtils.isEmpty(title)) {
+                remoteviews.setViewVisibility(R.id.notify_title, i % 2 == 0 ? View.GONE : View.VISIBLE);
+            } else {
+                // display title when title isn't empty
+                remoteviews.setViewVisibility(R.id.notify_title, i % 2 == 0 ? View.GONE : View.VISIBLE);
+                remoteviews.setTextViewText(R.id.notify_title, title);
+            }
+            if (TextUtils.isEmpty(titleContent)) {
+                Log.d(TAG, "titleContent is empty");
+                remoteviews.setViewVisibility(R.id.notify_title_content, i % 2 == 0 ? View.GONE : View.VISIBLE);
+            } else {
+                // display titleContent when titleContent isn't empty
+                remoteviews.setViewVisibility(R.id.notify_title_content, i % 2 == 0 ? View.GONE : View.VISIBLE);
+                remoteviews.setTextViewText(R.id.notify_title_content, titleContent);
+            }
+            if (TextUtils.isEmpty(content)) {
+                Log.d(TAG, "content is empty");
+                remoteviews.setViewVisibility(R.id.notify_content, i % 2 == 0 ? View.GONE : View.VISIBLE);
+            } else {
+                // display content when content isn't empty
+                remoteviews.setViewVisibility(R.id.notify_content, i % 2 == 0 ? View.GONE : View.VISIBLE);
+                remoteviews.setTextViewText(R.id.notify_content, content);
+            }
+            if (srcId == 0) {
+                remoteviews.setViewVisibility(R.id.notify_image, i % 2 == 0 ? View.GONE : View.VISIBLE);
+            } else {
+                // display notify_image when srcId isn't 0
+                remoteviews.setViewVisibility(R.id.notify_image, i % 2 == 0 ? View.GONE : View.VISIBLE);
+                remoteviews.setImageViewResource(R.id.notify_image, srcId);
+                remoteviews.setOnClickPendingIntent(R.id.notify_image, switchIntent);
+
+                remoteviews.setViewVisibility(R.id.notify_image_two, i % 2 == 0 ? View.GONE : View.VISIBLE);
+                remoteviews.setImageViewResource(R.id.notify_image_two, srcId);
+                remoteviews.setOnClickPendingIntent(R.id.notify_image_two, switchIntent2);
+            }
+        }
+
+        return remoteviews;
     }
 
     /**
@@ -252,7 +317,6 @@ public class FrequencyFragment extends Fragment implements OnClickListener, NewW
         Log.e(TAG, "activeManage  mActivity = " + getActivity() + ",   componentName = " + componentName);
         DeviceMethod.getInstance(mContext).onActivate();
     }
-
 
     @Override
     public void onAddView() {

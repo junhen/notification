@@ -513,29 +513,30 @@ public class TypeFragment extends Fragment {
 		Log.i(TAG, "external dir is " + fileDir);
 		String filePath = Environment.getExternalStorageDirectory().getAbsolutePath();
 		Log.i(TAG, "external dir is filePath = " + filePath);
-		File imageFile = new File(filePath + "/" + "wangshu.jpg");
+		// File imageFile = new File(filePath + "/" + "wangshu.jpg");
 		// add image link
-		if (imageFile != null) {
+		// if (imageFile != null) {
 			//File imageFile = new File(fileDir.getAbsolutePath() + "/" + "preview.jpg");
-			Log.i(TAG, "share image path is " + imageFile.toString() + " exists = " + imageFile.exists());
+			//Log.i(TAG, "share image path is " + imageFile.toString() + " exists = " + imageFile.exists());
 			intent1.setAction(Intent.ACTION_SEND);
 			intent1.setType("image/*");
-			Uri uri = Uri.fromFile(imageFile);
-			//Uri uri = Uri.fromFile(new File(getFilesDir(), "foo.jpg"));
+			//Uri uri = Uri.fromFile(imageFile);
+			//Uri uri = Uri.parse("android.resource://package_name/raw/jelly.png");
+		    Uri uri = Uri.parse("android.resource://" + getActivity().getApplicationContext().getPackageName() + "/" + "jelly.png");
+		    //Uri uri = Uri.fromFile(new File(getActivity().getFilesDir(), "jelly.png"));
 			//Uri uri = FileProvider.getUriForFile(mContext, "com.letv.android.ota.fileProvider", imageFile);
 			intent1.putExtra(Intent.EXTRA_STREAM, uri);
 			intent1.addFlags(Intent.FLAG_DEBUG_LOG_RESOLUTION);
 			intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		}
+		//}
 		Intent intent2 = new Intent();
 		intent2.setComponent(new ComponentName(mContext, MainActivity.class));
 		Log.i(TAG, "external dir is intent1 = " + intent1 +",   intent2 = "+intent2);
 		PendingIntent pendIntent = PendingIntent.getActivity(mContext, 0, intent1, 0);
 		PendingIntent pendIntent2 = PendingIntent.getActivity(mContext, 0, intent2, 0);
-		builder
-				.setSmallIcon(R.drawable.ic_action_search)
-				.setContent(getUpdateRemoteviews(0,"安装成功",null,null,R.drawable.preview,pendIntent,pendIntent2));
-
+		builder.setSmallIcon(R.drawable.ic_action_search)
+				.setContent(getUpdateRemoteviews(0,"title", "titleContent","content",
+						R.drawable.preview,pendIntent,pendIntent2));
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 			// Yummy jelly beans
 			return builder.build();
@@ -706,34 +707,37 @@ public class TypeFragment extends Fragment {
             return result;
         }
     }
-    
-    AudioManager.OnAudioFocusChangeListener mListener = new AudioManager.OnAudioFocusChangeListener(){
-        @Override
-        public void onAudioFocusChange(int focusChange) {
-        	Log.d(TAG,"onAudioFocusChange    focusChange= "+focusChange);
-        	switch (focusChange) {
-        	case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-        		mFocusChanged.setText(focusChange+" = AUDIOFOCUS_LOSS_TRANSIENT");
-        		break;
-        	case AudioManager.AUDIOFOCUS_LOSS:
-        		mFocusChanged.setText(focusChange+" = AUDIOFOCUS_LOSS");
-        		break;
-        	case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-        		mFocusChanged.setText(focusChange+" = AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK");
-        		break;
-        	case AudioManager.AUDIOFOCUS_GAIN:
-        		mFocusChanged.setText(focusChange+" = AUDIOFOCUS_GAIN");
-        		break;
-        	default :
-            	mFocusChanged.setText(focusChange+"");
-        		break;
-        	}
-        }
-    };
 
-	public RemoteViews getUpdateRemoteviews(int iconId, String title, String titleContent, String content, int srcId, PendingIntent switchIntent, PendingIntent switchIntent2) {
-		Log.d(TAG, "titleContent: " + titleContent + ", content: " + content);
-		RemoteViews remoteviews = new RemoteViews(mContext.getPackageName(), R.layout.le_update_notify);
+	AudioManager.OnAudioFocusChangeListener mListener = new AudioManager.OnAudioFocusChangeListener() {
+		@Override
+		public void onAudioFocusChange(int focusChange) {
+			Log.d(TAG, "onAudioFocusChange    focusChange= " + focusChange);
+			switch (focusChange) {
+				case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+					mFocusChanged.setText(focusChange + " = AUDIOFOCUS_LOSS_TRANSIENT");
+					break;
+				case AudioManager.AUDIOFOCUS_LOSS:
+					mFocusChanged.setText(focusChange + " = AUDIOFOCUS_LOSS");
+					break;
+				case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+					mFocusChanged.setText(focusChange + " = AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK");
+					break;
+				case AudioManager.AUDIOFOCUS_GAIN:
+					mFocusChanged.setText(focusChange + " = AUDIOFOCUS_GAIN");
+					break;
+				default:
+					mFocusChanged.setText(focusChange + "");
+					break;
+			}
+		}
+	};
+
+	private RemoteViews remoteviews;
+
+	public RemoteViews getUpdateRemoteviews(int iconId, String title, String titleContent, String content,
+											int srcId, PendingIntent switchIntent, PendingIntent switchIntent2) {
+		if (remoteviews == null)
+			remoteviews = new RemoteViews(mContext.getPackageName(), R.layout.le_update_notify);
 		if (iconId != 0) {
 			remoteviews.setImageViewResource(R.id.notify_icon, iconId);
 		}
@@ -745,7 +749,6 @@ public class TypeFragment extends Fragment {
 			remoteviews.setTextViewText(R.id.notify_title, title);
 		}
 		if (TextUtils.isEmpty(titleContent)) {
-			Log.d(TAG, "titleContent is empty");
 			remoteviews.setViewVisibility(R.id.notify_title_content, View.GONE);
 		} else {
 			// display titleContent when titleContent isn't empty
@@ -753,7 +756,6 @@ public class TypeFragment extends Fragment {
 			remoteviews.setTextViewText(R.id.notify_title_content, titleContent);
 		}
 		if (TextUtils.isEmpty(content)) {
-			Log.d(TAG, "content is empty");
 			remoteviews.setViewVisibility(R.id.notify_content, View.GONE);
 		} else {
 			// display content when content isn't empty
@@ -774,5 +776,5 @@ public class TypeFragment extends Fragment {
 		}
 		return remoteviews;
 	}
-    
+
 }
