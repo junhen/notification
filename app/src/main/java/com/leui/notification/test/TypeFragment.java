@@ -377,15 +377,71 @@ public class TypeFragment extends Fragment {
 	@TargetApi(Build.VERSION_CODES.M)
 	private Notification getDefaultNotification(Notification.Builder builder) {
 		Icon largeIcon = Icon.createWithResource(mContext, R.drawable.ic_launcher);
+		String text = "Default Text   Default Text" +
+				"   Default Text   Default Text   Default Text   Default Text" +
+				"   Default Text   Default Text   Default Text   Default Text";
+		CharSequence bigtext = Html.fromHtml(
+				"<b><font color=#ff0000> asdfaaasssss" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaaaaaaaaaaaaaaa" +
+						"aaatext3:</font></b>  Text with a " +
+						"<a href=\"http://www.google.com\">linkdddddddddddddddddddddddddddddddddddddddd</a> " +
+						"created in the Java source code using HTML.");
 		builder.setSmallIcon(R.drawable.ic_launcher)
 				.setWhen(System.currentTimeMillis())
 				.setContentTitle("Default Title")
-				.setContentText("Default Text   Default Text" +
-						"   Default Text   Default Text   Default Text   Default Text" +
-						"   Default Text   Default Text   Default Text   Default Text")
+				.setContentText(text)
 				.setContentInfo("Default Info")
 				.setContentIntent(PendingIntent.getActivity(mContext, 0, new Intent(mContext, MainActivity.class),0))
-				.setGroup(DEFAULT_GROUP_KEY)
+				//.setGroup(DEFAULT_GROUP_KEY)
+				.setStyle(new Notification.BigTextStyle().bigText(bigtext))
 				.setLargeIcon(largeIcon);
 		setTicker(builder, "getDefaultNotification");
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -452,7 +508,7 @@ public class TypeFragment extends Fragment {
 				.bigPicture(large)
 				.bigLargeIcon(notSoLarge)
 				.setBigContentTitle(ss)
-				.setBigContentTitle("BigPicture ex title")
+				//.setBigContentTitle("BigPicture ex title")
 				.setSummaryText("Summary text")
 				.build();
 	}
